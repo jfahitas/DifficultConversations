@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courageous Conversations: A Leader's Tool</title>
+    <title>Handling Difficult Conversations: A Leader's Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -276,10 +276,102 @@
                         ]}
                     ], currentStep: 0, completed: false
                 },
-                { id: 9, title: "Handling a Salary Negotiation Impasse", description: "You're in a salary negotiation with a promising candidate, but you're far apart on expectations.", steps: [], currentStep: 0, completed: false },
-                { id: 10, title: "Delivering Bad News to a Client", description: "You have to inform a major client that their project will be significantly delayed and over budget.", steps: [], currentStep: 0, completed: false },
-                { id: 11, title: "Addressing Biased Language", description: "A team member uses language that could be considered insensitive or biased, but may not be aware of it.", steps: [], currentStep: 0, completed: false },
-                { id: 12, title: "Receiving Vague Negative Feedback", description: "Your manager gives you vague feedback like 'you need more executive presence' without concrete examples.", steps: [], currentStep: 0, completed: false }
+                { 
+                    id: 9, 
+                    title: "Handling a Salary Negotiation Impasse", 
+                    description: "You're in a salary negotiation with a promising candidate, but you're far apart on expectations.", 
+                    steps: [
+                        { question: "How do you respond when the candidate's salary expectation is 20% higher than your budget?", options: [
+                            { text: "A) 'That's way outside our budget. We can't do that.'", feedback: "This is oppositional and may prematurely end the negotiation without exploring possibilities.", isCorrect: false },
+                            { text: "B) 'Okay, let me see if I can get that approved.'", feedback: "This gives up your leverage immediately and signals that your budget is flexible without understanding their reasoning first.", isCorrect: false },
+                            { text: "C) 'Thanks for sharing that. It's helpful to understand your expectations. That number is higher than we have budgeted for the role. Could you help me understand how you arrived at that figure?'", feedback: "Correct. This opens a dialogue about objective criteria and interests rather than getting stuck on positions. It invites them to share their reasoning.", isCorrect: true }
+                        ]},
+                        { question: "The candidate says their number is based on market data and another offer. How do you proceed?", options: [
+                            { text: "A) 'Well, our data shows something different.'", feedback: "This creates a 'battle of the data' and can lead to an argument rather than a problem-solving discussion.", isCorrect: false },
+                            { text: "B) 'I understand you're looking at the market and have other options. We really value your skills. Let's talk about the total compensation picture, including benefits, bonus potential, and opportunities for growth, to see if we can bridge the gap.'", feedback: "Excellent. You acknowledge their position and expand the conversation beyond just base salary to find other forms of value.", isCorrect: true },
+                            { text: "C) 'We can't match that other offer.'", feedback: "This focuses only on one aspect and might end the negotiation prematurely, without exploring the full picture.", isCorrect: false }
+                        ]},
+                        { question: "You've explored all options and there is still a small gap. How do you close?", options: [
+                            { text: "A) 'This is our final offer, take it or leave it.'", feedback: "Using an ultimatum can create ill will and damage the relationship before it even starts.", isCorrect: false },
+                            { text: "B) 'We've stretched as far as we can on our end. This final number is our best offer. We would be thrilled to have you join us and hope we can make it work, but I also understand if you need to go in another direction.'", feedback: "This is a strong and respectful closing. It states your final position clearly without being aggressive, and preserves the relationship regardless of the outcome.", isCorrect: true },
+                            { text: "C) 'How about we just split the difference?'", feedback: "While sometimes effective, simply splitting the difference is a haggling tactic, not one based on objective value or criteria.", isCorrect: false }
+                        ]}
+                    ], 
+                    currentStep: 0, 
+                    completed: false 
+                },
+                { 
+                    id: 10, 
+                    title: "Delivering Bad News to a Client", 
+                    description: "You have to inform a major client that their project will be significantly delayed and over budget.", 
+                    steps: [
+                        { question: "How do you open the call with the client?", options: [
+                            { text: "A) Start with 10 minutes of small talk to warm them up.", feedback: "This can feel disingenuous and may make the client more anxious, as they'll sense you're delaying bad news.", isCorrect: false },
+                            { text: "B) 'I'm calling with an update on Project Titan. I have some difficult news to share. We're facing a significant delay and will be over budget. I want to walk you through exactly what happened, the impact on the timeline, and our proposed plan to move forward.'", feedback: "This is the best approach. It's direct, respectful of their time, takes ownership immediately, and sets a clear, responsible agenda for the conversation.", isCorrect: true },
+                            { text: "C) 'We've run into some unexpected supply chain issues that are out of our control...'", feedback: "This starts by deflecting responsibility and focusing on blame of external factors, which can erode the client's trust in you.", isCorrect: false }
+                        ]},
+                        { question: "The client is furious, shouting about the impact on their business launch. How do you respond?", options: [
+                            { text: "A) 'Yelling won't solve the problem. Please let's be professional.'", feedback: "This criticizes their reaction and will almost certainly escalate the situation. It invalidates their legitimate feelings.", isCorrect: false },
+                            { text: "B) 'I understand you're angry, and you have every right to be. This is a major issue, and I hear the serious impact this has on your launch. Please, tell me more about your concerns.'", feedback: "Correct. You must acknowledge and validate their feelings without becoming defensive. Listen to their full story and all their concerns before you attempt to explain or problem-solve.", isCorrect: true },
+                            { text: "C) 'It's not just our fault, the vendor also made several mistakes that contributed to this.'", feedback: "Deflecting blame, even if true, will only make the client angrier in this moment. Your role is to take responsibility for the project's outcome from their perspective.", isCorrect: false }
+                        ]},
+                        { question: "After they've vented, how do you transition to a solution?", options: [
+                            { text: "A) 'So what do you want us to do about it?'", feedback: "This places the entire burden of finding a solution on the client, which is not your role. You should come prepared with options.", isCorrect: false },
+                            { text: "B) 'I can't change what happened, so let's just focus on what's next.'", feedback: "This sounds dismissive of the impact the past events have had. A more thorough acknowledgment is needed first.", isCorrect: false },
+                            { text: "C) 'Again, I want to apologize for this situation. Our immediate priority is to minimize the damage and get this project completed. We've developed a recovery plan I'd like your input on, and we are prepared to discuss financial concessions to account for the overage.'", feedback: "Excellent. This offers a concrete path forward, demonstrates proactivity, takes accountability, and opens the door to rectifying the financial and relational damage.", isCorrect: true }
+                        ]}
+                    ], 
+                    currentStep: 0, 
+                    completed: false 
+                },
+                { 
+                    id: 11, 
+                    title: "Addressing Biased Language", 
+                    description: "A team member uses language that could be considered insensitive or biased, but may not be aware of it.", 
+                    steps: [
+                        { question: "In a team meeting, a colleague says, 'We need some real muscle on this project, not just planners.' You perceive this as potentially marginalizing some team members. How do you address it?", options: [
+                            { text: "A) 'That's an inappropriate comment. We don't talk like that here.'", feedback: "This shames them publicly and is highly accusatory, which will shut down any chance of learning.", isCorrect: false },
+                            { text: "B) Say nothing to avoid conflict.", feedback: "Silence can be interpreted as agreement. This allows a behavior that can harm team cohesion to continue.", isCorrect: false },
+                            { text: "C) After the meeting, talk to them privately: 'Can I chat for a minute? In the meeting, you made a comment about needing 'muscle' on the project. I'm not sure how you intended it, but I wanted to share how it landed from my perspective.'", feedback: "Correct. This approach is private, specific, non-judgmental, and separates intent from impact. It opens a dialogue with curiosity, which is key.", isCorrect: true }
+                        ]},
+                        { question: "They respond, 'Wow, it was just an expression! I didn't mean anything by it. People are too sensitive.'", options: [
+                            { text: "A) 'Words matter. And those words are problematic.'", feedback: "This turns the conversation into a lecture or a debate about their character, rather than the impact of their words.", isCorrect: false },
+                            { text: "B) 'I get that you didn't mean it to be harmful. And I want to share that language like that can have the unintended impact of making some people on the team feel like their contributions aren't as valued. We get better results when everyone feels their strengths are respected.'", feedback: "Excellent. You acknowledge their stated intent, use the 'And Stance,' and explain the impact on the team's effectiveness, linking it back to a shared goal of high performance.", isCorrect: true },
+                            { text: "C) 'It sounds like you're not taking my concern seriously.'", feedback: "This makes the conversation about their reaction to you, rather than focusing on the core issue and its impact on the team.", isCorrect: false }
+                        ]},
+                        { question: "How do you close the conversation constructively?", options: [
+                            { text: "A) 'Just be more careful with your words from now on.'", feedback: "This is a command that doesn't build shared understanding or commitment to change.", isCorrect: false },
+                            { text: "B) 'I appreciate you hearing me out. My goal is for us to be a team where everyone feels they can contribute fully. Being mindful of our language is a small way we can all contribute to that.'", feedback: "Correct. This connects the specific behavior to a shared, positive team goal and frames it as a collective responsibility, not just their problem.", isCorrect: true },
+                            { text: "C) 'Okay, as long as you know how I feel now.'", feedback: "This makes the conversation solely about your feelings, rather than the broader impact on the team and its effectiveness.", isCorrect: false }
+                        ]}
+                    ], 
+                    currentStep: 0, 
+                    completed: false 
+                },
+                { 
+                    id: 12, 
+                    title: "Receiving Vague Negative Feedback", 
+                    description: "Your manager gives you vague feedback like 'you need more executive presence' without concrete examples.", 
+                    steps: [
+                        { question: "Your boss tells you, 'You need to be more strategic.' How do you respond?", options: [
+                            { text: "A) 'Okay, I'll work on that.'", feedback: "This is a common mistake. You're accepting vague feedback that you can't possibly act on, which sets you up for future failure.", isCorrect: false },
+                            { text: "B) 'I disagree, I think my last project was very strategic.'", feedback: "This is defensive and shuts down the conversation before you've even had a chance to understand what they really mean.", isCorrect: false },
+                            { text: "C) 'Thank you for that feedback. I genuinely want to understand it better. Can you give me a specific example of a time when my approach was more tactical than strategic in your view?'", feedback: "Perfect. You show you're receptive to feedback, and you ask for specific data to understand their perspective. This turns vague criticism into a coaching opportunity.", isCorrect: true }
+                        ]},
+                        { question: "They can't provide a specific example, but say, 'It's just a general feeling I get from your presentations.'", options: [
+                            { text: "A) 'Well, if you can't give me an example, I don't know what to do with that.'", feedback: "This is dismissive and sounds like you are rejecting the feedback, which can damage your relationship with your manager.", isCorrect: false },
+                            { text: "B) 'I appreciate you sharing that. To help me improve, could we look at my next presentation together beforehand? You could point out areas where I could elevate my thinking to be more strategic.'", feedback: "Excellent. You are taking ownership of your development by proposing a collaborative, forward-looking way to get the specific examples you need.", isCorrect: true },
+                            { text: "C) 'Okay, I'll just try to think bigger picture then.'", feedback: "This is still too vague. You haven't actually learned anything concrete and are still guessing about what they want.", isCorrect: false }
+                        ]},
+                        { question: "How do you ensure this leads to real improvement?", options: [
+                            { text: "A) Hope they notice your next presentation is more 'strategic'.", feedback: "This is passive and leaves success up to chance and their subjective interpretation.", isCorrect: false },
+                            { text: "B) 'Thanks. I'm going to work on incorporating more long-term impact analysis in my next report. After I send it, I'd appreciate 10 minutes of your time to get your feedback on whether that's hitting the mark on what you mean by 'strategic'.'", feedback: "Correct. You've defined a concrete action, proposed a way to test their feedback, and created a follow-up loop. You are managing your own performance improvement.", isCorrect: true },
+                            { text: "C) Go to your colleagues and complain about how vague your boss is.", feedback: "This is avoidance and triangulation. It doesn't solve the problem and can create a negative reputation for you.", isCorrect: false }
+                        ]}
+                    ], 
+                    currentStep: 0, 
+                    completed: false 
+                }
             ],
             currentScenarioId: null,
             qa: {
@@ -288,18 +380,6 @@
                 isLoading: false,
             }
         };
-
-        // Fill in empty scenarios with placeholder data
-        AppState.scenarios.forEach(s => {
-            if (s.steps.length === 0) {
-                s.steps = [
-                    { question: "Placeholder Question 1", options: [ {text: "Option A", feedback: "Feedback A", isCorrect: true}, {text: "Option B", feedback: "Feedback B", isCorrect: false}, {text: "Option C", feedback: "Feedback C", isCorrect: false} ]},
-                    { question: "Placeholder Question 2", options: [ {text: "Option A", feedback: "Feedback A", isCorrect: true}, {text: "Option B", feedback: "Feedback B", isCorrect: false}, {text: "Option C", feedback: "Feedback C", isCorrect: false} ]},
-                    { question: "Placeholder Question 3", options: [ {text: "Option A", feedback: "Feedback A", isCorrect: true}, {text: "Option B", feedback: "Feedback B", isCorrect: false}, {text: "Option C", feedback: "Feedback C", isCorrect: false} ]}
-                ]
-            }
-        });
-
 
         const appContainer = document.getElementById('app');
 
@@ -326,7 +406,8 @@
         function renderHomePage() {
             return `
                 <div class="text-center slide-up">
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Courageous Conversations</h1>
+                    <img src="uploaded:GKG_Logo_Stacked_K.png-e2646173-bf73-47e1-9b69-2f3954e57918" alt="Company Logo" class="mx-auto h-24 w-auto mb-4"/>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Handling Difficult Conversations</h1>
                     <p class="mt-4 text-lg text-gray-600">A Leader's Tool for Navigating Difficult Workplace Conversations</p>
                     <div class="mt-8 space-y-4 md:space-y-0 md:space-x-4">
                         <button data-page="scenarios" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">Practice with Scenarios</button>
@@ -581,42 +662,4 @@ Format your response using Markdown for clarity (headings, bold text, lists).`;
     </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Golden Key Group</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-    img.logo {
-      max-width: 300px;
-      height: auto;
-      margin-bottom: 1rem;
-    }
-    h1 {
-      margin-bottom: 0.5rem;
-    }
-    p.tagline {
-      color: #777;
-      font-size: 1.1rem;
-      margin-top: 0;
-    }
-  </style>
-</head>
-<body>
-  <img
-    class="logo"
-    src="images/GKG_Logo_Stacked_K_500.png"
-    alt="Golden Key Group Logo"
-  />
-  <h1>Golden Key Group</h1>
-  <p class="tagline">Talent Unlocked. Solutions Delivered.</p>
-</body>
-</html>
-
 
