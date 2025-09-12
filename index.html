@@ -1,80 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Handling Difficult Conversations: A Leader's Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff; /* Changed to white */
+            background-color: #ffffff;
         }
-        .main-container {
-            transition: opacity 0.5s ease-in-out;
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .slide-up {
-            animation: slideUp 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .btn-primary {
-            background-color: #3B3168; /* Main color */
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #2c254d; /* Darker shade of main color */
-        }
-        .btn-secondary {
-             background-color: #1e1936; /* Secondary color */
-             transition: background-color 0.3s ease;
-        }
-        .btn-secondary:hover {
-            background-color: #312b54; /* Lighter shade of secondary color */
-        }
-        .scenario-option {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .scenario-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        #gemini-response p {
-            margin-bottom: 1rem;
-        }
-        #gemini-response h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #3B3168; /* Main color */
-        }
-        #gemini-response ul {
-            list-style-position: inside;
-            padding-left: 1rem;
-        }
-        #gemini-response li {
-            margin-bottom: 0.5rem;
-        }
+        .main-container { transition: opacity 0.5s ease-in-out; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .slide-up { animation: slideUp 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .btn-primary { background-color: #3B3168; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #2c254d; }
+        .btn-secondary { background-color: #1e1936; transition: background-color 0.3s ease; }
+        .btn-secondary:hover { background-color: #312b54; }
+
+        .scenario-option { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .scenario-option:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+
+        #gemini-response p { margin-bottom: 1rem; }
+        #gemini-response h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #3B3168; }
+        #gemini-response ul { list-style-position: inside; padding-left: 1rem; }
+        #gemini-response li { margin-bottom: 0.5rem; }
     </style>
 </head>
 <body class="text-gray-800">
-
-    <div id="app" class="main-container max-w-4xl mx-auto p-4 md:p-8">
-        <!-- App content will be rendered here by JavaScript -->
-    </div>
+    <div id="app" class="main-container max-w-4xl mx-auto p-4 md:p-8"></div>
 
     <script>
+        // If your Drive file ID changes, update it here:
+        const LOGO_URL = "https://drive.google.com/uc?export=view&id=16wTw7LaC2z6wqxT-MAzs5wy3ADSkTuFF";
+
         const AppState = {
             currentPage: 'home', // 'home', 'scenarios', 'scenario-detail', 'qa'
             scenarios: [
@@ -115,7 +78,7 @@
                     id: 2,
                     title: 'Mediating Team Conflict',
                     description: 'Two of your direct reports are in a constant state of friction, affecting team morale and productivity.',
-                     steps: [
+                    steps: [
                         {
                             question: "You bring both team members together. What's your opening statement?",
                             options: [
@@ -156,7 +119,7 @@
                         ]},
                         { question: "Your boss says, 'I need a can-do attitude, not a list of problems.' What's your response?", options: [
                             { text: "A) 'I have a can-do attitude, but I'm also realistic.'", feedback: "This can sound argumentative. The focus should be on the shared goal of success, not defending your attitude.", isCorrect: false },
-                            { text: "B) 'My intention is absolutely to be 'can-do.' To do this project well and not let other priorities slip, I need your help in prioritizing. Can we look at the current project list together?'", feedback: "Excellent. You're reframing their comment, clarifying your positive intent, and inviting them to be part of the solution. You're managing their expectations by discussing trade-offs.", isCorrect: true },
+                            { text: "B) 'My intention is absolutely to be 'can-do.' To do this project well and not let other priorities slip, I need your help in prioritizing. Can we look at the current project list together?'", feedback: "Excellent. You’re reframing their comment, clarifying your positive intent, and inviting them to be part of the solution. You’re managing expectations by discussing trade-offs.", isCorrect: true },
                             { text: "C) 'Okay, we'll figure it out.'", feedback: "This is an accommodation that doesn't solve the core issue of over-allocation. The problem will likely reappear later.", isCorrect: false }
                         ]},
                         { question: "How do you close the conversation to ensure alignment?", options: [
@@ -164,7 +127,9 @@
                             { text: "B) 'Okay, so my understanding is we're prioritizing Project X, which means we'll pause Project Y and I will communicate that to the team. Does that match your understanding?'", feedback: "Perfect. This demonstrates accountability and confirms the agreed-upon solution. It's clear, collaborative, and ensures no misunderstandings.", isCorrect: true },
                             { text: "C) 'Thanks for the chat. I'll let you know how it goes.'", feedback: "This is too vague and leaves the actual decision and trade-offs unstated, risking future conflict when other projects are inevitably delayed.", isCorrect: false }
                         ]}
-                    ], currentStep: 0, completed: false
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
                 {
                     id: 4,
@@ -186,7 +151,9 @@
                             { text: "B) 'I'm just asking you to be more aware of how your comments might come across to people.'", feedback: "This is a good step that frames the request as one of awareness and consideration.", isCorrect: true },
                             { text: "C) 'If it happens again, I'm going to have to talk to our manager.'", feedback: "This is a threat that escalates the situation prematurely. It turns a coaching opportunity into a disciplinary one.", isCorrect: false }
                         ]}
-                    ], currentStep: 0, completed: false
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
                 {
                     id: 5,
@@ -208,7 +175,9 @@
                             { text: "B) 'I'm putting you on a Performance Improvement Plan. We'll meet weekly to track your progress.'", feedback: "While a PIP may be necessary, this statement is delivered as a verdict, not a collaborative plan.", isCorrect: false },
                             { text: "C) 'I want to work with you on this. Let's identify 2-3 specific areas for focus and outline what success looks like. What are your thoughts on where to start?'", feedback: "This is a collaborative, forward-looking, and supportive way to conclude. It turns the review into a plan for growth.", isCorrect: true }
                         ]}
-                    ], currentStep: 0, completed: false
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
                 {
                     id: 6,
@@ -230,9 +199,11 @@
                             { text: "B) To make sure they understand how uncomfortable everyone else is.", feedback: "While they need to understand the impact, the primary goal is not to make them feel bad, but to find a solution.", isCorrect: false },
                             { text: "C) To agree on a concrete, respectful plan of action and a follow-up time, while preserving the employee's dignity.", feedback: "This is the ideal outcome. It focuses on action, respect, and dignity, which is paramount in such a sensitive conversation.", isCorrect: true }
                         ]}
-                    ], currentStep: 0, completed: false
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
-                 {
+                {
                     id: 7,
                     title: 'Announcing an Unpopular Change',
                     description: 'You have to announce that the company is ending its remote work policy and requiring everyone back in the office.',
@@ -252,7 +223,9 @@
                             { text: "B) To listen, acknowledge concerns, and distinguish between what is decided and what might be flexible in the implementation.", feedback: "This is the most productive goal. It shows respect for your team and focuses on finding areas for collaborative problem-solving within the new constraints.", isCorrect: true },
                             { text: "C) To end the meeting as quickly as possible to minimize the negativity.", feedback: "Avoiding the negative emotions will only ensure they fester. Allowing people to voice them is a crucial part of the change management process.", isCorrect: false }
                         ]}
-                    ], currentStep: 0, completed: false
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
                 {
                     id: 8,
@@ -271,20 +244,22 @@
                         ]},
                         { question: "They say, 'We all worked on it, I was just summarizing our team's thoughts!' What do you say?", options: [
                             { text: "A) 'No, that was my specific idea that I shared with you yesterday!'", feedback: "This escalates the argument about 'what happened' and will lead to a stalemate.", isCorrect: false },
-                            { text: "B) 'I see. My perspective is different. I remember explaining the idea to you in detail yesterday. When you presented it without mentioning my contribution, I felt erased and pretty angry.'", feedback: "Perfect. You use the 'And Stance' by acknowledging their story ('I see') and then clearly stating your own story and the impact on you, using 'I' statements.", isCorrect: true },
+                            { text: "B) 'I see. My perspective is different. I remember explaining the idea to you in detail yesterday. When you presented it without mentioning my contribution, I felt erased and pretty angry.'", feedback: "Perfect. You acknowledge their story ('I see') and clearly state your story and the impact on you, using 'I' statements.", isCorrect: true },
                             { text: "C) 'Don't try to gaslight me. I know what happened.'", feedback: "This is highly accusatory and escalates the conflict dramatically. It makes a productive outcome nearly impossible.", isCorrect: false }
                         ]}
-                    ], currentStep: 0, completed: false
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
-                { 
-                    id: 9, 
-                    title: "Handling a Salary Negotiation Impasse", 
-                    description: "You're in a salary negotiation with a promising candidate, but you're far apart on expectations.", 
+                {
+                    id: 9,
+                    title: "Handling a Salary Negotiation Impasse",
+                    description: "You're in a salary negotiation with a promising candidate, but you're far apart on expectations.",
                     steps: [
                         { question: "How do you respond when the candidate's salary expectation is 20% higher than your budget?", options: [
                             { text: "A) 'That's way outside our budget. We can't do that.'", feedback: "This is oppositional and may prematurely end the negotiation without exploring possibilities.", isCorrect: false },
                             { text: "B) 'Okay, let me see if I can get that approved.'", feedback: "This gives up your leverage immediately and signals that your budget is flexible without understanding their reasoning first.", isCorrect: false },
-                            { text: "C) 'Thanks for sharing that. It's helpful to understand your expectations. That number is higher than we have budgeted for the role. Could you help me understand how you arrived at that figure?'", feedback: "Correct. This opens a dialogue about objective criteria and interests rather than getting stuck on positions. It invites them to share their reasoning.", isCorrect: true }
+                            { text: "C) 'Thanks for sharing that. It's helpful to understand your expectations. That number is higher than we have budgeted for the role. Could you help me understand how you arrived at that figure?'", feedback: "Correct. This opens a dialogue about objective criteria and interests rather than getting stuck on positions.", isCorrect: true }
                         ]},
                         { question: "The candidate says their number is based on market data and another offer. How do you proceed?", options: [
                             { text: "A) 'Well, our data shows something different.'", feedback: "This creates a 'battle of the data' and can lead to an argument rather than a problem-solving discussion.", isCorrect: false },
@@ -296,14 +271,14 @@
                             { text: "B) 'We've stretched as far as we can on our end. This final number is our best offer. We would be thrilled to have you join us and hope we can make it work, but I also understand if you need to go in another direction.'", feedback: "This is a strong and respectful closing. It states your final position clearly without being aggressive, and preserves the relationship regardless of the outcome.", isCorrect: true },
                             { text: "C) 'How about we just split the difference?'", feedback: "While sometimes effective, simply splitting the difference is a haggling tactic, not one based on objective value or criteria.", isCorrect: false }
                         ]}
-                    ], 
-                    currentStep: 0, 
-                    completed: false 
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
-                { 
-                    id: 10, 
-                    title: "Delivering Bad News to a Client", 
-                    description: "You have to inform a major client that their project will be significantly delayed and over budget.", 
+                {
+                    id: 10,
+                    title: "Delivering Bad News to a Client",
+                    description: "You have to inform a major client that their project will be significantly delayed and over budget.",
                     steps: [
                         { question: "How do you open the call with the client?", options: [
                             { text: "A) Start with 10 minutes of small talk to warm them up.", feedback: "This can feel disingenuous and may make the client more anxious, as they'll sense you're delaying bad news.", isCorrect: false },
@@ -320,14 +295,14 @@
                             { text: "B) 'I can't change what happened, so let's just focus on what's next.'", feedback: "This sounds dismissive of the impact the past events have had. A more thorough acknowledgment is needed first.", isCorrect: false },
                             { text: "C) 'Again, I want to apologize for this situation. Our immediate priority is to minimize the damage and get this project completed. We've developed a recovery plan I'd like your input on, and we are prepared to discuss financial concessions to account for the overage.'", feedback: "Excellent. This offers a concrete path forward, demonstrates proactivity, takes accountability, and opens the door to rectifying the financial and relational damage.", isCorrect: true }
                         ]}
-                    ], 
-                    currentStep: 0, 
-                    completed: false 
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
-                { 
-                    id: 11, 
-                    title: "Addressing Biased Language", 
-                    description: "A team member uses language that could be considered insensitive or biased, but may not be aware of it.", 
+                {
+                    id: 11,
+                    title: "Addressing Biased Language",
+                    description: "A team member uses language that could be considered insensitive or biased, but may not be aware of it.",
                     steps: [
                         { question: "In a team meeting, a colleague says, 'We need some real muscle on this project, not just planners.' You perceive this as potentially marginalizing some team members. How do you address it?", options: [
                             { text: "A) 'That's an inappropriate comment. We don't talk like that here.'", feedback: "This shames them publicly and is highly accusatory, which will shut down any chance of learning.", isCorrect: false },
@@ -344,14 +319,14 @@
                             { text: "B) 'I appreciate you hearing me out. My goal is for us to be a team where everyone feels they can contribute fully. Being mindful of our language is a small way we can all contribute to that.'", feedback: "Correct. This connects the specific behavior to a shared, positive team goal and frames it as a collective responsibility, not just their problem.", isCorrect: true },
                             { text: "C) 'Okay, as long as you know how I feel now.'", feedback: "This makes the conversation solely about your feelings, rather than the broader impact on the team and its effectiveness.", isCorrect: false }
                         ]}
-                    ], 
-                    currentStep: 0, 
-                    completed: false 
+                    ],
+                    currentStep: 0,
+                    completed: false
                 },
-                { 
-                    id: 12, 
-                    title: "Receiving Vague Negative Feedback", 
-                    description: "Your manager gives you vague feedback like 'you need more executive presence' without concrete examples.", 
+                {
+                    id: 12,
+                    title: "Receiving Vague Negative Feedback",
+                    description: "Your manager gives you vague feedback like 'you need more executive presence' without concrete examples.",
                     steps: [
                         { question: "Your boss tells you, 'You need to be more strategic.' How do you respond?", options: [
                             { text: "A) 'Okay, I'll work on that.'", feedback: "This is a common mistake. You're accepting vague feedback that you can't possibly act on, which sets you up for future failure.", isCorrect: false },
@@ -368,17 +343,13 @@
                             { text: "B) 'Thanks. I'm going to work on incorporating more long-term impact analysis in my next report. After I send it, I'd appreciate 10 minutes of your time to get your feedback on whether that's hitting the mark on what you mean by 'strategic'.'", feedback: "Correct. You've defined a concrete action, proposed a way to test their feedback, and created a follow-up loop. You are managing your own performance improvement.", isCorrect: true },
                             { text: "C) Go to your colleagues and complain about how vague your boss is.", feedback: "This is avoidance and triangulation. It doesn't solve the problem and can create a negative reputation for you.", isCorrect: false }
                         ]}
-                    ], 
-                    currentStep: 0, 
-                    completed: false 
+                    ],
+                    currentStep: 0,
+                    completed: false
                 }
             ],
             currentScenarioId: null,
-            qa: {
-                question: '',
-                response: '',
-                isLoading: false,
-            }
+            qa: { question: '', response: '', isLoading: false }
         };
 
         const appContainer = document.getElementById('app');
@@ -386,27 +357,27 @@
         function render() {
             appContainer.innerHTML = '';
             appContainer.classList.add('fade-in');
-            
-            let content = '';
 
-            if (AppState.currentPage === 'home') {
-                content = renderHomePage();
-            } else if (AppState.currentPage === 'scenarios') {
-                content = renderScenariosPage();
-            } else if (AppState.currentPage === 'scenario-detail') {
-                content = renderScenarioDetailPage();
-            } else if (AppState.currentPage === 'qa') {
-                content = renderQAPage();
-            }
-            
+            let content = '';
+            if (AppState.currentPage === 'home') content = renderHomePage();
+            else if (AppState.currentPage === 'scenarios') content = renderScenariosPage();
+            else if (AppState.currentPage === 'scenario-detail') content = renderScenarioDetailPage();
+            else if (AppState.currentPage === 'qa') content = renderQAPage();
+
             appContainer.innerHTML = content;
             attachEventListeners();
         }
 
+        // ---- PAGES ----
         function renderHomePage() {
             return `
+                <header class="w-full py-6">
+                    <img src="${LOGO_URL}" alt="Company Logo"
+                         class="mx-auto h-20 md:h-24 w-auto block"
+                         onerror="this.style.display='none';" />
+                </header>
+
                 <div class="text-center slide-up">
-                    <img src="https://drive.google.com/file/d/16wTw7LaC2z6wqxT-MAzs5wy3ADSkTuFF/view?usp=sharing" alt="Company Logo" class="mx-auto h-24 w-auto mb-4"/>
                     <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Handling Difficult Conversations</h1>
                     <p class="mt-4 text-lg text-gray-600">A Leader's Tool for Navigating Difficult Workplace Conversations</p>
                     <div class="mt-8 space-y-4 md:space-y-0 md:space-x-4">
@@ -414,6 +385,7 @@
                         <button data-page="qa" class="btn-secondary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">Ask a Question</button>
                     </div>
                 </div>
+
                 <div class="mt-12 p-6 bg-white rounded-lg shadow-lg slide-up" style="animation-delay: 0.2s;">
                     <h2 class="text-2xl font-bold mb-4">Core Principles</h2>
                     <p class="mb-2">This tool is based on foundational research from sources like "Crucial Conversations," "Difficult Conversations," and "Radical Candor." The key is to shift your mindset from a battle of messages to a collaborative learning conversation.</p>
@@ -427,7 +399,7 @@
                 </div>
             `;
         }
-        
+
         function renderScenariosPage() {
             const scenariosList = AppState.scenarios.map(s => `
                 <div class="bg-white p-6 rounded-lg shadow-md scenario-option cursor-pointer" data-scenario-id="${s.id}">
@@ -455,7 +427,7 @@
                 return renderScenariosPage();
             }
             const step = scenario.steps[scenario.currentStep];
-            
+
             const optionsHtml = step.options.map((opt, index) => `
                 <div class="scenario-option p-4 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100" data-option-index="${index}">
                    ${String.fromCharCode(65 + index)}) ${opt.text}
@@ -480,7 +452,7 @@
                 </div>
             `;
         }
-        
+
         function renderQAPage() {
             return `
                 <div class="slide-up">
@@ -506,6 +478,7 @@
             `;
         }
 
+        // ---- EVENT HANDLERS ----
         function handleScenarioOptionClick(e) {
             const optionIndex = parseInt(e.currentTarget.dataset.optionIndex);
             const scenario = AppState.scenarios.find(s => s.id === AppState.currentScenarioId);
@@ -520,9 +493,9 @@
                     <p>${selectedOption.feedback}</p>
                 </div>
             `;
-            
+
             document.querySelectorAll('.scenario-option').forEach(opt => {
-                opt.style.pointerEvents = 'none'; // Disable further clicks
+                opt.style.pointerEvents = 'none';
                 if (parseInt(opt.dataset.optionIndex) !== optionIndex) {
                     opt.style.opacity = '0.5';
                 }
@@ -542,16 +515,14 @@
                 render();
             }
         }
-        
+
         async function handleAskGemini() {
             const question = document.getElementById('qa-question').value;
             if (!question.trim()) {
-                // In a real app, you'd use a modal, but alert is fine for this example.
-                // Creating a custom modal is out of scope for a single file app of this nature.
                 alert('Please enter a question.');
                 return;
             }
-            
+
             AppState.qa.question = question;
             AppState.qa.isLoading = true;
             render();
@@ -573,40 +544,35 @@ Format your response using Markdown for clarity (headings, bold text, lists).`;
 
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
+                systemInstruction: { parts: [{ text: systemPrompt }] },
             };
-            
+
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const result = await response.json();
                 const candidate = result.candidates?.[0];
 
                 if (candidate && candidate.content?.parts?.[0]?.text) {
                     let text = candidate.content.parts[0].text;
-                    
+
                     // Simple markdown to HTML conversion
                     text = text.replace(/### (.*)/g, '<h3>$1</h3>');
                     text = text.replace(/## (.*)/g, '<h3>$1</h3>');
                     text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    text = text.replace(/\* (.*)/g, '<li>$1</li>');
+                    text = text.replace(/^\* (.*)$/gm, '<li>$1</li>');
                     text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
                     text = text.replace(/\n/g, '<br>');
 
-
                     AppState.qa.response = `<div class="prose">${text}</div>`;
                 } else {
-                     AppState.qa.response = '<p class="text-red-500">Sorry, I couldn\'t generate a response. Please try again.</p>';
+                    AppState.qa.response = '<p class="text-red-500">Sorry, I couldn\'t generate a response. Please try again.</p>';
                 }
-            } catch(error) {
+            } catch (error) {
                 console.error("API Call failed:", error);
                 AppState.qa.response = '<p class="text-red-500">An error occurred while getting guidance. Please check the console for details.</p>';
             } finally {
@@ -619,18 +585,15 @@ Format your response using Markdown for clarity (headings, bold text, lists).`;
             document.querySelectorAll('button[data-page]').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const page = e.currentTarget.dataset.page;
-                    // Reset scenario progress when going back to the scenario list
-                    if(page === 'scenarios'){
+                    if (page === 'scenarios') {
                         const scenario = AppState.scenarios.find(s => s.id === AppState.currentScenarioId);
-                        if(scenario) {
-                            scenario.currentStep = 0;
-                        }
+                        if (scenario) scenario.currentStep = 0;
                     }
                     AppState.currentPage = page;
                     render();
                 });
             });
-            
+
             if (AppState.currentPage === 'scenarios') {
                 document.querySelectorAll('.scenario-option').forEach(item => {
                     item.addEventListener('click', e => {
@@ -640,26 +603,22 @@ Format your response using Markdown for clarity (headings, bold text, lists).`;
                     });
                 });
             }
-            
+
             if (AppState.currentPage === 'scenario-detail') {
-                 document.querySelectorAll('.scenario-option').forEach(item => {
+                document.querySelectorAll('.scenario-option').forEach(item => {
                     item.addEventListener('click', handleScenarioOptionClick);
                 });
                 const nextBtn = document.getElementById('next-btn');
-                if (nextBtn) {
-                    nextBtn.addEventListener('click', handleNextStep);
-                }
+                if (nextBtn) nextBtn.addEventListener('click', handleNextStep);
             }
-            
+
             if (AppState.currentPage === 'qa') {
                 document.getElementById('ask-gemini-btn').addEventListener('click', handleAskGemini);
             }
         }
 
-        // Initial Render
+        // Initial render
         render();
-
     </script>
 </body>
 </html>
-
