@@ -1,624 +1,464 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Handling Difficult Conversations: A Leader's Tool</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
-        }
-        .main-container { transition: opacity 0.5s ease-in-out; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        .slide-up { animation: slideUp 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Difficult Conversations Tool</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
 
-        .btn-primary { background-color: #3B3168; transition: background-color 0.3s ease; }
-        .btn-primary:hover { background-color: #2c254d; }
-        .btn-secondary { background-color: #1e1936; transition: background-color 0.3s ease; }
-        .btn-secondary:hover { background-color: #312b54; }
-
-        .scenario-option { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .scenario-option:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
-
-        #gemini-response p { margin-bottom: 1rem; }
-        #gemini-response h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #3B3168; }
-        #gemini-response ul { list-style-position: inside; padding-left: 1rem; }
-        #gemini-response li { margin-bottom: 0.5rem; }
-    </style>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.8s ease-in-out; }
+    .animate-slideUp { animation: slideUp 0.5s ease-in-out; }
+    body { font-family: sans-serif; }
+    .prose h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; margin-top: 1.5rem; color: #3B3168; }
+    .prose h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; margin-top: 1rem; }
+    .prose p { margin-bottom: 1rem; }
+    .prose ul { list-style-position: inside; list-style-type: disc; margin-bottom: 1rem; margin-left: 1rem; }
+    .prose li { margin-bottom: 0.25rem; }
+    .prose strong { font-weight: 600; }
+  </style>
 </head>
-<body class="text-gray-800">
-    <div id="app" class="main-container max-w-4xl mx-auto p-4 md:p-8"></div>
+<body class="bg-gray-50">
+  <div id="root"></div>
 
-    <script>
-        // If your Drive file ID changes, update it here:
-        const LOGO_URL = "https://drive.google.com/uc?export=view&id=16wTw7LaC2z6wqxT-MAzs5wy3ADSkTuFF";
+  <script type="text/babel" data-presets="react">
+    // Deconstruct necessary libraries from window object
+    const { useState, useEffect, forwardRef, useMemo } = React;
+    const { CheckCircle, XCircle, Loader2 } = lucide;
 
-        const AppState = {
-            currentPage: 'home', // 'home', 'scenarios', 'scenario-detail', 'qa'
-            scenarios: [
-                {
-                    id: 1,
-                    title: 'Addressing Underperformance',
-                    description: 'A talented team member has been consistently missing deadlines and their quality of work has dropped.',
-                    steps: [
-                        {
-                            question: "You need to initiate the conversation. How do you begin?",
-                            options: [
-                                { text: "A) 'We need to talk about your performance issues.'", feedback: "This can immediately put the person on the defensive. It frames the conversation as a confrontation rather than a collaborative problem-solving session.", isCorrect: false },
-                                { text: "B) 'I've noticed a few things I'd like to discuss to make sure we're aligned and to see how I can support you. Can we chat?'", feedback: "Excellent. This is a neutral, supportive opening that focuses on alignment and support. It's based on the 'Third Story' principle from 'Difficult Conversations' - describing the gap between expectations and reality without blame.", isCorrect: true },
-                                { text: "C) 'Your work has been slipping lately. What's going on?'", feedback: "This is accusatory and jumps to conclusions. It's better to start with observations rather than judgments.", isCorrect: false }
-                            ]
-                        },
-                        {
-                            question: "The employee becomes defensive, saying, 'I'm doing my best, I've just been swamped.' How do you respond?",
-                            options: [
-                                { text: "A) 'Everyone is swamped. We need you to meet your deadlines.'", feedback: "This dismisses their feelings and will likely escalate the conflict. It creates an adversarial dynamic.", isCorrect: false },
-                                { text: "B) 'I hear that you're feeling swamped. Let's talk about your workload. And I also want to discuss the impact of the missed deadlines.'", feedback: "Perfect. This uses the 'And Stance.' You acknowledge their feelings and reality ('you're feeling swamped') AND you bring the conversation back to your own valid concerns ('the impact of missed deadlines').", isCorrect: true },
-                                { text: "C) 'Let's focus on the deadlines, not on how busy you are.'", feedback: "This ignores the feelings and the employee's reality, which is a key part of the conversation. Unaddressed feelings will likely resurface.", isCorrect: false }
-                            ]
-                        },
-                        {
-                            question: "You've discussed the issue. How do you conclude the conversation?",
-                            options: [
-                                { text: "A) 'So you agree to improve your performance?'", feedback: "This frames the outcome as a demand and may not secure genuine commitment. It's a simplistic conclusion to a complex issue.", isCorrect: false },
-                                { text: "B) 'I'm glad we had this chat. I'm going to check in with you weekly on your progress.'", feedback: "While well-intentioned, this can feel like micromanagement. The plan should be collaborative.", isCorrect: false },
-                                { text: "C) 'Thanks for sharing your perspective. Let's create a clear plan together for how you can get the support you need and get back on track. What are your initial thoughts?'", feedback: "Excellent. This focuses on collaborative problem-solving, shared contribution, and clear next steps, which is crucial for lasting change.", isCorrect: true }
-                            ]
-                        }
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 2,
-                    title: 'Mediating Team Conflict',
-                    description: 'Two of your direct reports are in a constant state of friction, affecting team morale and productivity.',
-                    steps: [
-                        {
-                            question: "You bring both team members together. What's your opening statement?",
-                            options: [
-                                { text: "A) 'Alright, you two need to work out your issues right now.'", feedback: "This is a demand, not an invitation to a conversation. It's likely to increase tension.", isCorrect: false },
-                                { text: "B) 'I've noticed some tension between you that seems to be impacting the team. I'd like for us to talk about it. My goal is to understand both of your perspectives and see if we can find a better way to work together.'", feedback: "This is a great start. It's neutral, states the impact on the team, and frames the purpose as collaborative understanding and problem-solving.", isCorrect: true },
-                                { text: "C) 'Whose fault is this conflict? I want to get to the bottom of it.'", feedback: "Focusing on blame is a trap. It encourages defensiveness and prevents understanding the contribution system where both parties play a role.", isCorrect: false }
-                            ]
-                        },
-                        {
-                            question: "One employee says, 'It's all their fault! They are completely unreasonable.' The other employee starts to argue back. What do you do?",
-                            options: [
-                                { text: "A) 'Let's not point fingers. Just talk about the facts.'", feedback: "While the sentiment is good, this shuts down the emotional component. Feelings are at the heart of the matter and need to be acknowledged.", isCorrect: false },
-                                { text: "B) 'Okay, John, it sounds like you're feeling very frustrated. Let me hear your perspective first, and then Jane, I want to hear yours completely.'", feedback: "Excellent. You acknowledge the emotion, then structure the conversation to ensure both parties feel heard, one at a time. This prevents a shouting match.", isCorrect: true },
-                                { text: "C) Let them argue it out to get their feelings out in the open.", feedback: "This is likely to devolve into a destructive argument. The conversation needs structure and your guidance as a leader.", isCorrect: false }
-                            ]
-                        },
-                        {
-                            question: "After hearing both sides, you see they have different work styles and expectations. How do you guide them toward a solution?",
-                            options: [
-                                { text: "A) 'You both need to be more professional and just get along.'", feedback: "This is a judgment, not a solution. It doesn't address the underlying issues of their different styles.", isCorrect: false },
-                                { text: "B) 'John, you need to be more flexible. Jane, you need to be more structured. Agree?'", feedback: "Assigning solutions without their input is unlikely to lead to buy-in. It's better to have them generate solutions.", isCorrect: false },
-                                { text: "C) 'It sounds like you have different expectations for communication and collaboration. What's one thing you could each do differently to make working together easier?'", feedback: "This is the best approach. It reframes the problem from personality flaws to a systemic issue of contribution and different styles. It empowers them to create their own solutions.", isCorrect: true }
-                            ]
-                        }
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 3,
-                    title: 'Saying "No" to a New Project',
-                    description: 'Your team is at capacity, but your boss asks you to take on another high-priority project.',
-                    steps: [
-                        { question: "How do you start the conversation with your boss?", options: [
-                            { text: "A) 'We absolutely cannot take on another project right now.'", feedback: "This is oppositional and closes the door to problem-solving. It's a 'no' without context.", isCorrect: false },
-                            { text: "B) 'I'd be happy to. We'll just have to work longer hours.'", feedback: "This avoids the difficult conversation, but leads to burnout and resentment. It's not a sustainable solution.", isCorrect: false },
-                            { text: "C) 'I understand the importance of this project. I want to talk through my team's current workload to see how we might make this successful.'", feedback: "Great start. It shows you're a team player while opening a realistic conversation about resources and priorities. It frames the issue as a shared problem.", isCorrect: true }
-                        ]},
-                        { question: "Your boss says, 'I need a can-do attitude, not a list of problems.' What's your response?", options: [
-                            { text: "A) 'I have a can-do attitude, but I'm also realistic.'", feedback: "This can sound argumentative. The focus should be on the shared goal of success, not defending your attitude.", isCorrect: false },
-                            { text: "B) 'My intention is absolutely to be 'can-do.' To do this project well and not let other priorities slip, I need your help in prioritizing. Can we look at the current project list together?'", feedback: "Excellent. You’re reframing their comment, clarifying your positive intent, and inviting them to be part of the solution. You’re managing expectations by discussing trade-offs.", isCorrect: true },
-                            { text: "C) 'Okay, we'll figure it out.'", feedback: "This is an accommodation that doesn't solve the core issue of over-allocation. The problem will likely reappear later.", isCorrect: false }
-                        ]},
-                        { question: "How do you close the conversation to ensure alignment?", options: [
-                            { text: "A) 'So, just to confirm, you'll let the other departments know their projects will be delayed?'", feedback: "This puts all the responsibility for the consequences on your boss and can sound passive-aggressive.", isCorrect: false },
-                            { text: "B) 'Okay, so my understanding is we're prioritizing Project X, which means we'll pause Project Y and I will communicate that to the team. Does that match your understanding?'", feedback: "Perfect. This demonstrates accountability and confirms the agreed-upon solution. It's clear, collaborative, and ensures no misunderstandings.", isCorrect: true },
-                            { text: "C) 'Thanks for the chat. I'll let you know how it goes.'", feedback: "This is too vague and leaves the actual decision and trade-offs unstated, risking future conflict when other projects are inevitably delayed.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 4,
-                    title: 'Confronting Unprofessional Behavior',
-                    description: 'A colleague frequently makes sarcastic or dismissive comments about others\' ideas in team meetings.',
-                    steps: [
-                        { question: "You decide to talk to the colleague privately. How do you open?", options: [
-                            { text: "A) 'Your sarcastic comments in meetings are really unprofessional.'", feedback: "This is a direct attack on their character and will likely be met with defensiveness.", isCorrect: false },
-                            { text: "B) 'Can I share an observation with you? In the meeting today, when Jane shared her idea, your comment was 'Good luck with that.' I wanted to check in on what you were thinking and share how it landed.'", feedback: "This is an ideal start. It is specific, non-judgmental, separates intent from impact, and opens a dialogue with curiosity.", isCorrect: true },
-                            { text: "C) 'Why are you always so negative in meetings?'", feedback: "This is an exaggeration ('always') and a judgmental question that will shut down the conversation.", isCorrect: false }
-                        ]},
-                        { question: "They respond, 'I was just joking! People are too sensitive around here.' What's your reply?", options: [
-                            { text: "A) 'It wasn't funny, and it's not about being sensitive.'", feedback: "This turns the conversation into an argument about what's funny or sensitive, which is a sidetrack.", isCorrect: false },
-                            { text: "B) 'I didn't take it as a joke. Regardless of your intent, the impact was that it cut off the brainstorming.'", feedback: "This is a good response that holds the focus on the impact of the behavior, not the intent behind it. This is a crucial distinction in difficult conversations.", isCorrect: true },
-                            { text: "C) 'Well, your jokes are hurting team morale.'", feedback: "This is a broad statement that sounds like an accusation from 'the team' rather than your own specific observation.", isCorrect: false }
-                        ]},
-                        { question: "How do you move towards a resolution?", options: [
-                            { text: "A) 'You need to stop making those kinds of comments.'", feedback: "This is a demand that doesn't encourage buy-in or a change in understanding.", isCorrect: false },
-                            { text: "B) 'I'm just asking you to be more aware of how your comments might come across to people.'", feedback: "This is a good step that frames the request as one of awareness and consideration.", isCorrect: true },
-                            { text: "C) 'If it happens again, I'm going to have to talk to our manager.'", feedback: "This is a threat that escalates the situation prematurely. It turns a coaching opportunity into a disciplinary one.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 5,
-                    title: 'Giving a Critical Performance Review',
-                    description: 'You are giving a performance review to a long-term employee who is a poor performer but well-liked.',
-                    steps: [
-                        { question: "How do you start the review meeting?", options: [
-                            { text: "A) Start with a long list of all the positive things to soften the blow.", feedback: "This is the 'feedback sandwich,' which is often confusing. The employee may not even hear the critical feedback.", isCorrect: false },
-                            { text: "B) 'Thanks for coming in. The purpose of this conversation is to review your performance over the last year. I want to discuss some areas where you are not meeting expectations.'", feedback: "This is direct and clear. It sets a transparent agenda for the conversation, which is respectful to the employee.", isCorrect: true },
-                            { text: "C) 'This is a difficult conversation for me to have...'", feedback: "Starting with your own discomfort puts the focus on you and can make the employee anxious or feel they need to manage your emotions.", isCorrect: false }
-                        ]},
-                        { question: "The employee is shocked and hurt, saying 'I had no idea you felt this way. I thought I was doing a good job.'", options: [
-                            { text: "A) 'I'm sorry you feel that way, but the results speak for themselves.'", feedback: "This is a non-apology that dismisses their feelings. It will likely damage trust.", isCorrect: false },
-                            { text: "B) 'It sounds like this is a surprise and that's my fault. I should have been giving you this feedback more regularly. Let's talk through the specific examples I have.'", feedback: "Excellent. This takes responsibility for your contribution to the problem (lack of timely feedback) while still holding the conversation about the performance issues.", isCorrect: true },
-                            { text: "C) 'Well, you shouldn't be surprised. The signs were there.'", feedback: "This is blaming and unhelpful. It will only escalate the employee's feelings of being unfairly treated.", isCorrect: false }
-                        ]},
-                        { question: "How do you end the review on a constructive note?", options: [
-                            { text: "A) 'Let's hope for a better year next year.'", feedback: "This is vague and provides no clear path forward. Hope is not a strategy.", isCorrect: false },
-                            { text: "B) 'I'm putting you on a Performance Improvement Plan. We'll meet weekly to track your progress.'", feedback: "While a PIP may be necessary, this statement is delivered as a verdict, not a collaborative plan.", isCorrect: false },
-                            { text: "C) 'I want to work with you on this. Let's identify 2-3 specific areas for focus and outline what success looks like. What are your thoughts on where to start?'", feedback: "This is a collaborative, forward-looking, and supportive way to conclude. It turns the review into a plan for growth.", isCorrect: true }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 6,
-                    title: 'Addressing a Personal Hygiene Issue',
-                    description: 'A team member has a noticeable body odor issue that is making colleagues uncomfortable.',
-                    steps: [
-                        { question: "This is a highly sensitive topic. How do you begin the conversation?", options: [
-                            { text: "A) Ask HR to handle it.", feedback: "While you should consult HR for guidance, abdicating your responsibility as a manager can be seen as avoidance.", isCorrect: false },
-                            { text: "B) 'I need to talk to you about something that is very awkward, and I want to be as respectful as possible. I'm talking about a personal hygiene issue.'", feedback: "This is direct, acknowledges the awkwardness, and signals respect. It gets straight to the point without being unnecessarily blunt.", isCorrect: true },
-                            { text: "C) 'Some people have been complaining about an odor...'", feedback: "This triangles the issue and makes it about 'other people.' It's better to own the conversation yourself, even if you are representing team feedback.", isCorrect: false }
-                        ]},
-                        { question: "The employee is mortified and says they have a medical condition.", options: [
-                            { text: "A) 'I see. Well, you still need to manage it so it doesn't affect the workplace.'", feedback: "While the impact needs to be addressed, this response lacks empathy for their situation.", isCorrect: false },
-                            { text: "B) 'Thank you for sharing that with me. That sounds difficult. Let's talk about what accommodations or solutions we can find that work for you and also address the workplace impact.'", feedback: "This is a perfect blend of empathy, support, and collaborative problem-solving. It respects their personal situation while keeping the focus on finding a workable solution.", isCorrect: true },
-                            { text: "C) 'Are you sure it's a medical condition? You should see a doctor.'", feedback: "This questions their honesty and gives unsolicited medical advice, which is inappropriate and unprofessional.", isCorrect: false }
-                        ]},
-                        { question: "What is the goal for the end of the conversation?", options: [
-                            { text: "A) Get them to promise they will solve the problem immediately.", feedback: "This is an unrealistic expectation. The goal is to create a plan, not demand an instant fix.", isCorrect: false },
-                            { text: "B) To make sure they understand how uncomfortable everyone else is.", feedback: "While they need to understand the impact, the primary goal is not to make them feel bad, but to find a solution.", isCorrect: false },
-                            { text: "C) To agree on a concrete, respectful plan of action and a follow-up time, while preserving the employee's dignity.", feedback: "This is the ideal outcome. It focuses on action, respect, and dignity, which is paramount in such a sensitive conversation.", isCorrect: true }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 7,
-                    title: 'Announcing an Unpopular Change',
-                    description: 'You have to announce that the company is ending its remote work policy and requiring everyone back in the office.',
-                    steps: [
-                        { question: "How do you frame the announcement in the team meeting?", options: [
-                            { text: "A) 'Good news! We're all coming back to the office to improve collaboration!'", feedback: "This is 'toxic positivity.' It ignores the reality that this will be bad news for many and can damage your credibility.", isCorrect: false },
-                            { text: "B) 'I have some difficult news to share. The company has decided to end the remote work policy. I know this will be disappointing for many of you, and I want to walk through the decision and then hear your questions and concerns.'", feedback: "This is the best approach. It is honest, direct, acknowledges the likely emotional impact, and creates space for dialogue.", isCorrect: true },
-                            { text: "C) 'Unfortunately, leadership has made a decision that I don't agree with, but we have to bring everyone back to the office.'", feedback: "This undermines the decision and your own leadership. It aligns you with the team against 'management,' which is a weak position.", isCorrect: false }
-                        ]},
-                        { question: "A team member says, 'This is a huge step backward! I'm going to lose 2 hours a day commuting. Why is this happening?'", options: [
-                            { text: "A) 'I understand your frustration, but the decision is final.'", feedback: "This shuts down the conversation. Even if the decision is final, you need to allow people to process and feel heard.", isCorrect: false },
-                            { text: "B) 'Let's not get negative. We need to focus on the positives of being together.'", feedback: "This invalidates their legitimate concerns. People need to have their concerns acknowledged, not dismissed.", isCorrect: false },
-                            { text: "C) 'I hear your frustration about the commute. That's a real concern. Let me share the leadership's reasoning, and then we can talk about how we as a team can make this transition as smooth as possible.'", feedback: "Excellent. You validate their feeling, provide context without being defensive, and shift the focus to what you *can* control: the transition.", isCorrect: true }
-                        ]},
-                        { question: "What should be your main goal during the Q&A portion of the meeting?", options: [
-                            { text: "A) To defend the company's decision at all costs.", feedback: "Your goal isn't to be a debater, but a leader. Defensiveness will only create more opposition.", isCorrect: false },
-                            { text: "B) To listen, acknowledge concerns, and distinguish between what is decided and what might be flexible in the implementation.", feedback: "This is the most productive goal. It shows respect for your team and focuses on finding areas for collaborative problem-solving within the new constraints.", isCorrect: true },
-                            { text: "C) To end the meeting as quickly as possible to minimize the negativity.", feedback: "Avoiding the negative emotions will only ensure they fester. Allowing people to voice them is a crucial part of the change management process.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 8,
-                    title: 'Confronting a Colleague Who Stole Your Idea',
-                    description: 'In a leadership meeting, a peer presented your idea as their own and received credit for it.',
-                    steps: [
-                        { question: "You need to talk to your colleague. What is your goal for this conversation?", options: [
-                            { text: "A) To get them to admit they stole your idea and apologize.", feedback: "This focuses on blame and confession. You can't know their intent for sure, and this goal will likely lead to a defensive argument.", isCorrect: false },
-                            { text: "B) To understand what happened from their perspective and share the impact their actions had on you.", feedback: "This is the right goal. It's a learning goal that avoids assumptions about intent and opens the door for a productive conversation.", isCorrect: true },
-                            { text: "C) To let them know you're onto them and won't let it happen again.", feedback: "This is a threat, not a conversation. It creates an adversarial relationship from the start.", isCorrect: false }
-                        ]},
-                        { question: "How do you start the private conversation?", options: [
-                            { text: "A) 'I need to understand something. In the meeting, you presented the X idea. Can you walk me through your thought process on that?'", feedback: "This is a great, curious opening. It's non-accusatory and genuinely seeks their story first.", isCorrect: true },
-                            { text: "B) 'So, you decided to present my idea as your own. Not cool.'", feedback: "This is a direct accusation based on your assumption of their intent. It will immediately make the conversation an argument.", isCorrect: false },
-                            { text: "C) 'That was a great presentation you gave. It sounded very familiar.'", feedback: "This is passive-aggressive. Sarcasm and indirect communication will only muddy the waters and create mistrust.", isCorrect: false }
-                        ]},
-                        { question: "They say, 'We all worked on it, I was just summarizing our team's thoughts!' What do you say?", options: [
-                            { text: "A) 'No, that was my specific idea that I shared with you yesterday!'", feedback: "This escalates the argument about 'what happened' and will lead to a stalemate.", isCorrect: false },
-                            { text: "B) 'I see. My perspective is different. I remember explaining the idea to you in detail yesterday. When you presented it without mentioning my contribution, I felt erased and pretty angry.'", feedback: "Perfect. You acknowledge their story ('I see') and clearly state your story and the impact on you, using 'I' statements.", isCorrect: true },
-                            { text: "C) 'Don't try to gaslight me. I know what happened.'", feedback: "This is highly accusatory and escalates the conflict dramatically. It makes a productive outcome nearly impossible.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 9,
-                    title: "Handling a Salary Negotiation Impasse",
-                    description: "You're in a salary negotiation with a promising candidate, but you're far apart on expectations.",
-                    steps: [
-                        { question: "How do you respond when the candidate's salary expectation is 20% higher than your budget?", options: [
-                            { text: "A) 'That's way outside our budget. We can't do that.'", feedback: "This is oppositional and may prematurely end the negotiation without exploring possibilities.", isCorrect: false },
-                            { text: "B) 'Okay, let me see if I can get that approved.'", feedback: "This gives up your leverage immediately and signals that your budget is flexible without understanding their reasoning first.", isCorrect: false },
-                            { text: "C) 'Thanks for sharing that. It's helpful to understand your expectations. That number is higher than we have budgeted for the role. Could you help me understand how you arrived at that figure?'", feedback: "Correct. This opens a dialogue about objective criteria and interests rather than getting stuck on positions.", isCorrect: true }
-                        ]},
-                        { question: "The candidate says their number is based on market data and another offer. How do you proceed?", options: [
-                            { text: "A) 'Well, our data shows something different.'", feedback: "This creates a 'battle of the data' and can lead to an argument rather than a problem-solving discussion.", isCorrect: false },
-                            { text: "B) 'I understand you're looking at the market and have other options. We really value your skills. Let's talk about the total compensation picture, including benefits, bonus potential, and opportunities for growth, to see if we can bridge the gap.'", feedback: "Excellent. You acknowledge their position and expand the conversation beyond just base salary to find other forms of value.", isCorrect: true },
-                            { text: "C) 'We can't match that other offer.'", feedback: "This focuses only on one aspect and might end the negotiation prematurely, without exploring the full picture.", isCorrect: false }
-                        ]},
-                        { question: "You've explored all options and there is still a small gap. How do you close?", options: [
-                            { text: "A) 'This is our final offer, take it or leave it.'", feedback: "Using an ultimatum can create ill will and damage the relationship before it even starts.", isCorrect: false },
-                            { text: "B) 'We've stretched as far as we can on our end. This final number is our best offer. We would be thrilled to have you join us and hope we can make it work, but I also understand if you need to go in another direction.'", feedback: "This is a strong and respectful closing. It states your final position clearly without being aggressive, and preserves the relationship regardless of the outcome.", isCorrect: true },
-                            { text: "C) 'How about we just split the difference?'", feedback: "While sometimes effective, simply splitting the difference is a haggling tactic, not one based on objective value or criteria.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 10,
-                    title: "Delivering Bad News to a Client",
-                    description: "You have to inform a major client that their project will be significantly delayed and over budget.",
-                    steps: [
-                        { question: "How do you open the call with the client?", options: [
-                            { text: "A) Start with 10 minutes of small talk to warm them up.", feedback: "This can feel disingenuous and may make the client more anxious, as they'll sense you're delaying bad news.", isCorrect: false },
-                            { text: "B) 'I'm calling with an update on Project Titan. I have some difficult news to share. We're facing a significant delay and will be over budget. I want to walk you through exactly what happened, the impact on the timeline, and our proposed plan to move forward.'", feedback: "This is the best approach. It's direct, respectful of their time, takes ownership immediately, and sets a clear, responsible agenda for the conversation.", isCorrect: true },
-                            { text: "C) 'We've run into some unexpected supply chain issues that are out of our control...'", feedback: "This starts by deflecting responsibility and focusing on blame of external factors, which can erode the client's trust in you.", isCorrect: false }
-                        ]},
-                        { question: "The client is furious, shouting about the impact on their business launch. How do you respond?", options: [
-                            { text: "A) 'Yelling won't solve the problem. Please let's be professional.'", feedback: "This criticizes their reaction and will almost certainly escalate the situation. It invalidates their legitimate feelings.", isCorrect: false },
-                            { text: "B) 'I understand you're angry, and you have every right to be. This is a major issue, and I hear the serious impact this has on your launch. Please, tell me more about your concerns.'", feedback: "Correct. You must acknowledge and validate their feelings without becoming defensive. Listen to their full story and all their concerns before you attempt to explain or problem-solve.", isCorrect: true },
-                            { text: "C) 'It's not just our fault, the vendor also made several mistakes that contributed to this.'", feedback: "Deflecting blame, even if true, will only make the client angrier in this moment. Your role is to take responsibility for the project's outcome from their perspective.", isCorrect: false }
-                        ]},
-                        { question: "After they've vented, how do you transition to a solution?", options: [
-                            { text: "A) 'So what do you want us to do about it?'", feedback: "This places the entire burden of finding a solution on the client, which is not your role. You should come prepared with options.", isCorrect: false },
-                            { text: "B) 'I can't change what happened, so let's just focus on what's next.'", feedback: "This sounds dismissive of the impact the past events have had. A more thorough acknowledgment is needed first.", isCorrect: false },
-                            { text: "C) 'Again, I want to apologize for this situation. Our immediate priority is to minimize the damage and get this project completed. We've developed a recovery plan I'd like your input on, and we are prepared to discuss financial concessions to account for the overage.'", feedback: "Excellent. This offers a concrete path forward, demonstrates proactivity, takes accountability, and opens the door to rectifying the financial and relational damage.", isCorrect: true }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 11,
-                    title: "Addressing Biased Language",
-                    description: "A team member uses language that could be considered insensitive or biased, but may not be aware of it.",
-                    steps: [
-                        { question: "In a team meeting, a colleague says, 'We need some real muscle on this project, not just planners.' You perceive this as potentially marginalizing some team members. How do you address it?", options: [
-                            { text: "A) 'That's an inappropriate comment. We don't talk like that here.'", feedback: "This shames them publicly and is highly accusatory, which will shut down any chance of learning.", isCorrect: false },
-                            { text: "B) Say nothing to avoid conflict.", feedback: "Silence can be interpreted as agreement. This allows a behavior that can harm team cohesion to continue.", isCorrect: false },
-                            { text: "C) After the meeting, talk to them privately: 'Can I chat for a minute? In the meeting, you made a comment about needing 'muscle' on the project. I'm not sure how you intended it, but I wanted to share how it landed from my perspective.'", feedback: "Correct. This approach is private, specific, non-judgmental, and separates intent from impact. It opens a dialogue with curiosity, which is key.", isCorrect: true }
-                        ]},
-                        { question: "They respond, 'Wow, it was just an expression! I didn't mean anything by it. People are too sensitive.'", options: [
-                            { text: "A) 'Words matter. And those words are problematic.'", feedback: "This turns the conversation into a lecture or a debate about their character, rather than the impact of their words.", isCorrect: false },
-                            { text: "B) 'I get that you didn't mean it to be harmful. And I want to share that language like that can have the unintended impact of making some people on the team feel like their contributions aren't as valued. We get better results when everyone feels their strengths are respected.'", feedback: "Excellent. You acknowledge their stated intent, use the 'And Stance,' and explain the impact on the team's effectiveness, linking it back to a shared goal of high performance.", isCorrect: true },
-                            { text: "C) 'It sounds like you're not taking my concern seriously.'", feedback: "This makes the conversation about their reaction to you, rather than focusing on the core issue and its impact on the team.", isCorrect: false }
-                        ]},
-                        { question: "How do you close the conversation constructively?", options: [
-                            { text: "A) 'Just be more careful with your words from now on.'", feedback: "This is a command that doesn't build shared understanding or commitment to change.", isCorrect: false },
-                            { text: "B) 'I appreciate you hearing me out. My goal is for us to be a team where everyone feels they can contribute fully. Being mindful of our language is a small way we can all contribute to that.'", feedback: "Correct. This connects the specific behavior to a shared, positive team goal and frames it as a collective responsibility, not just their problem.", isCorrect: true },
-                            { text: "C) 'Okay, as long as you know how I feel now.'", feedback: "This makes the conversation solely about your feelings, rather than the broader impact on the team and its effectiveness.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                },
-                {
-                    id: 12,
-                    title: "Receiving Vague Negative Feedback",
-                    description: "Your manager gives you vague feedback like 'you need more executive presence' without concrete examples.",
-                    steps: [
-                        { question: "Your boss tells you, 'You need to be more strategic.' How do you respond?", options: [
-                            { text: "A) 'Okay, I'll work on that.'", feedback: "This is a common mistake. You're accepting vague feedback that you can't possibly act on, which sets you up for future failure.", isCorrect: false },
-                            { text: "B) 'I disagree, I think my last project was very strategic.'", feedback: "This is defensive and shuts down the conversation before you've even had a chance to understand what they really mean.", isCorrect: false },
-                            { text: "C) 'Thank you for that feedback. I genuinely want to understand it better. Can you give me a specific example of a time when my approach was more tactical than strategic in your view?'", feedback: "Perfect. You show you're receptive to feedback, and you ask for specific data to understand their perspective. This turns vague criticism into a coaching opportunity.", isCorrect: true }
-                        ]},
-                        { question: "They can't provide a specific example, but say, 'It's just a general feeling I get from your presentations.'", options: [
-                            { text: "A) 'Well, if you can't give me an example, I don't know what to do with that.'", feedback: "This is dismissive and sounds like you are rejecting the feedback, which can damage your relationship with your manager.", isCorrect: false },
-                            { text: "B) 'I appreciate you sharing that. To help me improve, could we look at my next presentation together beforehand? You could point out areas where I could elevate my thinking to be more strategic.'", feedback: "Excellent. You are taking ownership of your development by proposing a collaborative, forward-looking way to get the specific examples you need.", isCorrect: true },
-                            { text: "C) 'Okay, I'll just try to think bigger picture then.'", feedback: "This is still too vague. You haven't actually learned anything concrete and are still guessing about what they want.", isCorrect: false }
-                        ]},
-                        { question: "How do you ensure this leads to real improvement?", options: [
-                            { text: "A) Hope they notice your next presentation is more 'strategic'.", feedback: "This is passive and leaves success up to chance and their subjective interpretation.", isCorrect: false },
-                            { text: "B) 'Thanks. I'm going to work on incorporating more long-term impact analysis in my next report. After I send it, I'd appreciate 10 minutes of your time to get your feedback on whether that's hitting the mark on what you mean by 'strategic'.'", feedback: "Correct. You've defined a concrete action, proposed a way to test their feedback, and created a follow-up loop. You are managing your own performance improvement.", isCorrect: true },
-                            { text: "C) Go to your colleagues and complain about how vague your boss is.", feedback: "This is avoidance and triangulation. It doesn't solve the problem and can create a negative reputation for you.", isCorrect: false }
-                        ]}
-                    ],
-                    currentStep: 0,
-                    completed: false
-                }
-            ],
-            currentScenarioId: null,
-            qa: { question: '', response: '', isLoading: false }
-        };
+    // A simple version of the 'cn' utility for merging class names
+    const cn = (...inputs) => {
+      return inputs.filter(Boolean).join(' ');
+    }
+    
+    //=========== DATA FILES ===========//
 
-        const appContainer = document.getElementById('app');
+    // data/answerBank.ts
+    const answerBank = [
+        {
+            keywords: ["feedback", "boss", "manager", "upward"],
+            content: `## Giving Feedback to Your Manager
 
-        function render() {
-            appContainer.innerHTML = '';
-            appContainer.classList.add('fade-in');
+Giving feedback to your boss requires careful navigation. The goal is to be helpful and constructive without seeming critical or insubordinate. Here’s a proven framework to structure your conversation.
 
-            let content = '';
-            if (AppState.currentPage === 'home') content = renderHomePage();
-            else if (AppState.currentPage === 'scenarios') content = renderScenariosPage();
-            else if (AppState.currentPage === 'scenario-detail') content = renderScenarioDetailPage();
-            else if (AppState.currentPage === 'qa') content = renderQAPage();
+### 1. Check Your Intent & Ask for Permission
+Before you begin, ensure your motive is to help the team or project succeed. Start by asking for permission to share your thoughts. This shows respect for their position and prepares them to listen.
 
-            appContainer.innerHTML = content;
-            attachEventListeners();
-        }
+- **Example:** *"I have some thoughts on the new project workflow that I think could help us move faster. Would you be open to hearing them?"*
 
-        // ---- PAGES ----
-        function renderHomePage() {
-            return `
-                <header class="w-full py-6">
-                    <img src="${LOGO_URL}" alt="Company Logo"
-                         class="mx-auto h-20 md:h-24 w-auto block"
-                         onerror="this.style.display='none';" />
-                </header>
+### 2. Use the Situation-Behavior-Impact (SBI) Model
+This model keeps feedback objective and focused on facts, not accusations.
+- **Situation:** Describe the specific context.
+- **Behavior:** Describe the specific, observable action or behavior.
+- **Impact:** Explain the concrete effect the behavior had on you, the team, or the work.
 
-                <div class="text-center slide-up">
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Handling Difficult Conversations</h1>
-                    <p class="mt-4 text-lg text-gray-600">A Leader's Tool for Navigating Difficult Workplace Conversations</p>
-                    <div class="mt-8 space-y-4 md:space-y-0 md:space-x-4">
-                        <button data-page="scenarios" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">Practice with Scenarios</button>
-                        <button data-page="qa" class="btn-secondary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">Ask a Question</button>
-                    </div>
-                </div>
+- **Example:** *"During **(S)** this morning's client call, **(B)** when the new mockups were presented as final, **(I)** it caused some confusion for the client and meant we had to walk back expectations later on."*
 
-                <div class="mt-12 p-6 bg-white rounded-lg shadow-lg slide-up" style="animation-delay: 0.2s;">
-                    <h2 class="text-2xl font-bold mb-4">Core Principles</h2>
-                    <p class="mb-2">This tool is based on foundational research from sources like "Crucial Conversations," "Difficult Conversations," and "Radical Candor." The key is to shift your mindset from a battle of messages to a collaborative learning conversation.</p>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700">
-                        <li><strong>Start with the Third Story:</strong> Describe the problem from a neutral, third-party perspective.</li>
-                        <li><strong>Embrace the "And Stance":</strong> Acknowledge that both perspectives can be valid simultaneously.</li>
-                        <li><strong>Disentangle Intent from Impact:</strong> Separate what they did from the story you tell yourself about why they did it.</li>
-                        <li><strong>Map Contribution, Abandon Blame:</strong> Look for how everyone contributed to the situation, rather than assigning fault.</li>
-                        <li><strong>Acknowledge Feelings:</strong> Address the emotional undercurrent of the conversation directly and respectfully.</li>
-                    </ul>
-                </div>
-            `;
-        }
+### 3. Propose a Collaborative Solution
+After presenting the feedback, pivot to a solution-oriented approach. Frame it as a suggestion or a question to invite collaboration.
 
-        function renderScenariosPage() {
-            const scenariosList = AppState.scenarios.map(s => `
-                <div class="bg-white p-6 rounded-lg shadow-md scenario-option cursor-pointer" data-scenario-id="${s.id}">
-                    <h3 class="font-bold text-xl text-[#3B3168]">${s.title}</h3>
-                    <p class="text-gray-600 mt-2">${s.description}</p>
-                    ${s.completed ? '<span class="text-green-500 font-bold mt-2 inline-block">Completed!</span>' : ''}
-                </div>
-            `).join('');
+- **Example:** *"Moving forward, perhaps we could align on the status of deliverables before client calls to ensure we present a unified front. What are your thoughts on that?"*
 
-            return `
-                <div class="slide-up">
-                    <button data-page="home" class="mb-6 text-[#3B3168] hover:text-[#2c254d]">&larr; Back to Home</button>
-                    <h2 class="text-3xl font-bold mb-6">Choose a Scenario</h2>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        ${scenariosList}
-                    </div>
-                </div>
-            `;
-        }
+By following this structure, you frame your feedback as a valuable, objective observation aimed at mutual success.`
+        },
+        {
+            keywords: ["conflict", "team", "argue", "disagree"],
+            content: `## Resolving Team Conflict
 
-        function renderScenarioDetailPage() {
-            const scenario = AppState.scenarios.find(s => s.id === AppState.currentScenarioId);
-            if (!scenario) {
-                AppState.currentPage = 'scenarios';
-                return renderScenariosPage();
-            }
-            const step = scenario.steps[scenario.currentStep];
+When mediating conflict between team members, your role is to facilitate a productive conversation, not to pick a side. The goal is to help both parties feel heard and guide them toward a mutually agreeable solution.
 
-            const optionsHtml = step.options.map((opt, index) => `
-                <div class="scenario-option p-4 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100" data-option-index="${index}">
-                   ${String.fromCharCode(65 + index)}) ${opt.text}
-                </div>
-            `).join('');
+### 1. Meet Individually First
+Before bringing the team members together, meet with each one separately. This allows you to understand their perspective without the pressure of a confrontation. Listen actively and validate their feelings without agreeing with their position.
 
-            return `
-                <div class="slide-up">
-                    <button data-page="scenarios" class="mb-6 text-[#3B3168] hover:text-[#2c254d]">&larr; Back to Scenarios</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold text-gray-900">${scenario.title}</h2>
-                        <p class="text-gray-600 mt-2 mb-6">Step ${scenario.currentStep + 1} of ${scenario.steps.length}</p>
-                        <p class="text-lg font-medium mb-6">${step.question}</p>
-                        <div class="space-y-4" id="options-container">
-                            ${optionsHtml}
-                        </div>
-                        <div id="feedback-container" class="mt-6"></div>
-                        <div class="mt-6 text-right">
-                            <button id="next-btn" class="btn-primary text-white font-bold py-2 px-6 rounded-lg shadow-md hidden">Next &rarr;</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+- **What to say:** *"Help me understand your perspective on what happened in the project meeting."*
 
-        function renderQAPage() {
-            return `
-                <div class="slide-up">
-                    <button data-page="home" class="mb-6 text-[#3B3168] hover:text-[#2c254d]">&larr; Back to Home</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-3xl font-bold mb-2">Ask a Question</h2>
-                        <p class="mb-6 text-gray-600">Describe a difficult conversation you're facing or have questions about. I'll provide guidance based on proven frameworks.</p>
-                        <textarea id="qa-question" class="w-full p-3 border rounded-lg h-32" placeholder="E.g., How do I give feedback to my boss without sounding insubordinate?">${AppState.qa.question}</textarea>
-                        <div class="mt-4 text-right">
-                             <button id="ask-gemini-btn" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg">
-                                ${AppState.qa.isLoading ? '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>' : 'Get Guidance'}
-                            </button>
-                        </div>
-                         <div id="gemini-response" class="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                             ${AppState.qa.response || '<p class="text-gray-500">Your guidance will appear here.</p>'}
-                        </div>
-                        <div class="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
-                            <h4 class="font-bold mb-2">How This Guidance is Generated</h4>
-                            <p>The advice you receive is generated by an advanced AI model from Google. It grounds all responses in foundational principles hand selected by Golden Key Group and leading research on communication and organizational development. It aims to provide structured, actionable steps to help you turn difficult conversations into productive learning opportunities.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+### 2. Facilitate a Joint Conversation
+Bring both individuals together. Your job is to create a safe space and keep the conversation constructive.
+- **Set Ground Rules:** Start by establishing rules, such as "no interruptions" and "focus on the problem, not the person."
+- **Find Common Ground:** Reframe the issue around a shared goal.
+- **Example:** *"I know you both are committed to making this project a success. Let's focus on how we can get there. From my understanding, we're misaligned on the best approach for the launch."*
 
-        // ---- EVENT HANDLERS ----
-        function handleScenarioOptionClick(e) {
-            const optionIndex = parseInt(e.currentTarget.dataset.optionIndex);
-            const scenario = AppState.scenarios.find(s => s.id === AppState.currentScenarioId);
-            const step = scenario.steps[scenario.currentStep];
-            const selectedOption = step.options[optionIndex];
+### 3. Guide Them to a Solution
+Encourage each person to state what they need to move forward. Help them brainstorm solutions that can meet both of their underlying interests.
 
-            const feedbackContainer = document.getElementById('feedback-container');
-            const feedbackColor = selectedOption.isCorrect ? 'green' : 'red';
-            feedbackContainer.innerHTML = `
-                <div class="p-4 rounded-lg bg-${feedbackColor}-100 border border-${feedbackColor}-200 text-${feedbackColor}-800">
-                    <p class="font-bold">${selectedOption.isCorrect ? 'Excellent choice!' : 'Consider this...'}</p>
-                    <p>${selectedOption.feedback}</p>
-                </div>
-            `;
+- **What to say:** *"Alex, what do you need from Jordan to feel confident in the project plan? Jordan, what do you need from Alex to maintain flexibility?"*
 
-            document.querySelectorAll('.scenario-option').forEach(opt => {
-                opt.style.pointerEvents = 'none';
-                if (parseInt(opt.dataset.optionIndex) !== optionIndex) {
-                    opt.style.opacity = '0.5';
+Document the agreed-upon solution and follow up to ensure the conflict is truly resolved.`
+        },
+        {
+            keywords: ["default", "general", "help"],
+            content: `## General Guidance for Difficult Conversations
+
+Navigating difficult conversations is a critical leadership skill. While every situation is unique, a few core principles can guide you toward a more productive outcome.
+
+### 1. Start with Heart (Know Your Goal)
+Before you say anything, be clear on what you truly want as an outcome for yourself, for the other person, and for the relationship. When conversations get tough, use your goal as an anchor to stay focused and avoid getting sidetracked by emotion.
+
+- **Ask yourself:** *"What do I really want to achieve with this conversation?"*
+
+### 2. Make it Safe
+People become defensive when they don't feel psychologically safe. If you see signs of fear or anger (silence or violence), step out of the content of the conversation and rebuild safety. You can do this by showing respect and clarifying your positive intentions.
+
+- **Example:** *"I can see this is frustrating. I want to be clear that my intention is not to blame anyone, but to understand what happened so we can prevent it from happening again."*
+
+### 3. Focus on Facts, Not Stories
+Separate what you observed from the story you told yourself about it. Start conversations by sharing the observable facts, which are less likely to be disputed.
+
+- **Instead of:** *"You were trying to undermine me in that meeting."*
+- **Try:** *"In the meeting, when I was presenting, I was interrupted several times. I'm concerned about the impact that had on the team's understanding of the plan."*
+
+By mastering these principles, you can turn difficult conversations from confrontations into opportunities for growth and stronger relationships.`
+        },
+    ];
+
+    const searchAnswers = (question) => {
+        const queryWords = question.toLowerCase().match(/\b(\w+)\b/g) || [];
+        if (queryWords.length === 0) return [];
+
+        const scoredAnswers = answerBank.map(answer => {
+            let score = 0;
+            answer.keywords.forEach(keyword => {
+                if (queryWords.includes(keyword)) {
+                    score++;
                 }
             });
+            return { ...answer, score };
+        });
 
-            document.getElementById('next-btn').classList.remove('hidden');
+        return scoredAnswers.filter(a => a.score > 0).sort((a, b) => b.score - a.score);
+    };
+
+    const getDefaultAnswer = () => answerBank.find(a => a.keywords.includes("default"));
+
+    // data/scenarios.ts
+    const scenarios = [
+      { id: 1, title: "Delivering Critical Performance Feedback", description: "Navigate a challenging conversation with an underperforming team member who has been missing deadlines.", category: "Performance Management", difficulty: "Intermediate", estimatedTime: "10-15 min", completed: false, questions: [{ id: 1, question: "When approaching this conversation, what should be your primary focus?", options: ["Focus on her personal issues that might be causing the delays", "Document the pattern of missed deadlines and their business impact", "Compare her performance to other team members to motivate her", "Wait another month to see if the pattern continues"], correctAnswer: 1, feedback: ["Correct! Documentation of specific instances and business impact creates a foundation for productive conversation.", "Focusing on business impact rather than personal issues keeps the conversation professional and actionable.", "This approach follows the SBI model (Situation-Behavior-Impact)."] }, { id: 2, question: "When starting the feedback conversation, which opening would be most effective?", options: ["\"Sarah, we need to talk about your performance issues.\"", "\"Sarah, I've noticed a pattern with project deadlines that I'd like to discuss. Can we talk about what's happening?\"", "\"Sarah, I'm disappointed in your recent work quality.\"", "\"Sarah, other team members are complaining about your missed deadlines.\""], correctAnswer: 1, feedback: ["Excellent choice! This opening is specific, non-judgmental, and invites dialogue.", "Starting with observations rather than judgments creates psychological safety for honest conversation.", "The phrase 'what's happening' shows curiosity rather than accusation."] }, { id: 3, question: "During the conversation, Sarah becomes defensive and says \"I'm doing my best!\" How should you respond?", options: ["\"Clearly your best isn't good enough for this role.\"", "\"I believe you are trying hard. Let's talk about what might help you meet these deadlines consistently.\"", "\"Everyone else manages to meet their deadlines.\"", "\"Your best needs to improve significantly.\""], correctAnswer: 1, feedback: ["Perfect! This response acknowledges her effort while redirecting to problem-solving.", "Using 'AND' instead of 'BUT' maintains both truths: she's trying AND deadlines are being missed.", "This approach focuses on finding solutions rather than assigning blame."] }] },
+      { id: 2, title: "Addressing Team Conflict", description: "Mediate between two team members who have different working styles and are clashing on a critical project.", category: "Conflict Resolution", difficulty: "Advanced", estimatedTime: "15-20 min", completed: false, questions: [{ id: 4, question: "Two team members are in conflict over project approach. What's your first step?", options: ["Tell them to figure it out themselves", "Choose the approach you think is better and mandate it", "Meet with each person individually to understand their perspectives", "Immediately bring them together for a group discussion"], correctAnswer: 2, feedback: ["Excellent! Individual meetings help you understand each perspective without the pressure of defending positions.", "This approach prevents the conflict from escalating and gives you complete information.", "Understanding each person's underlying concerns is crucial for finding sustainable solutions."] }, { id: 5, question: "In your individual meeting with Alex, they say \"Jordan never plans anything and it's causing chaos.\" How do you respond?", options: ["\"I can see why that would be frustrating for someone who values planning.\"", "\"Jordan actually does plan, just differently than you do.\"", "\"You need to be more flexible with different working styles.\"", "\"That's not really true - Jordan has good ideas.\""], correctAnswer: 0, feedback: ["Great choice! This validates Alex's experience without agreeing that Jordan is wrong.", "Acknowledging feelings helps people feel heard, which is essential before problem-solving.", "This response avoids taking sides while showing empathy."] }, { id: 6, question: "When facilitating the joint conversation, both team members start blaming each other. What's your best intervention?", options: ["\"Let's stop the blame game and focus on solutions.\"", "\"I can see you both care deeply about this project's success. Let's talk about what that would look like.\"", "\"You're both being unprofessional right now.\"", "\"Alex is right about needing more planning.\""], correctAnswer: 1, feedback: ["Perfect! This reframes the conflict around shared goals rather than individual positions.", "Highlighting common ground helps people shift from adversarial to collaborative mindset.", "This technique, called 'finding the third story,' helps people see beyond their individual perspectives."] }] },
+      { id: 3, title: "Salary Negotiation Discussion", description: "Handle a request for a significant salary increase during a budget-constrained period.", category: "Compensation", difficulty: "Intermediate", estimatedTime: "10-15 min", completed: false, questions: [{ id: 7, question: "Your top performer requests a 20% salary increase, but your budget is frozen. What's your best approach?", options: ["\"Sorry, there's no money in the budget right now.\"", "\"Let me understand what's driving this request, and then I'll share what options we might have.\"", "\"That's way too much - maybe we can do 5%.\"", "\"Let me think about it and get back to you.\""], correctAnswer: 1, feedback: ["Excellent approach! Understanding the 'why' behind the request helps you address the real need.", "This shows respect for their request while being honest about constraints.", "Opening with curiosity rather than limitations creates space for creative solutions."] }, { id: 8, question: "The employee explains they've gotten an offer from another company. How do you respond?", options: ["\"Well, if you want to leave, that's your choice.\"", "\"I can't match that offer, so I guess you'll have to decide.\"", "\"I value your contribution here. Let's talk about what would make staying the right choice for you.\"", "\"Other companies always promise more than they deliver.\""], correctAnswer: 2, feedback: ["Great response! This acknowledges their value while opening discussion about retention beyond just salary.", "This approach explores the total value proposition, not just monetary compensation.", "Focusing on what makes staying attractive shows you're invested in finding a win-win solution."] }, { id: 9, question: "You can't match the salary offer. What's your best alternative approach?", options: ["Promise a salary increase next year", "Offer a one-time bonus instead", "Explore other valuable benefits: flexible schedule, professional development budget, or expanded responsibilities", "Try to convince them the other company isn't as good"], correctAnswer: 2, feedback: ["Perfect! Creative compensation goes beyond salary to address what people truly value.", "This approach recognizes that career satisfaction involves multiple factors beyond base pay.", "Offering growth opportunities and flexibility can be as valuable as monetary increases."] }] },
+      { id: 4, title: "Managing Up: Challenging Your Boss's Decision", description: "Respectfully disagree with your manager's strategic decision that you believe could harm your team's success.", category: "Managing Up", difficulty: "Advanced", estimatedTime: "10-15 min", completed: false, questions: [{ id: 10, question: "Your boss has cut your project timeline by 30%, which you believe will compromise quality. What's your approach?", options: ["Go along with it to avoid conflict", "Tell them directly that it's a bad decision", "Request a private meeting to share your concerns and explore alternatives", "Complain to your boss's manager"], correctAnswer: 2, feedback: ["Excellent choice! A private meeting shows respect while creating space for honest dialogue.", "This approach demonstrates professionalism and gives your boss an opportunity to explain their reasoning.", "Requesting a meeting rather than confronting in the moment shows you take the issue seriously."]}, { id: 11, question: "How should you start this difficult conversation with your boss?", options: ["\"I think you're making a mistake with this timeline.\"", "\"I wanted to understand your thinking on the new timeline and share some concerns I have.\"", "\"This timeline is completely unrealistic.\"", "\"The team is upset about this decision.\""], correctAnswer: 1, feedback: ["Perfect opening! This shows genuine curiosity about their perspective before sharing yours.", "Starting with understanding rather than disagreement creates a collaborative tone.", "This approach follows the principle of seeking first to understand, then to be understood."]}, { id: 12, question: "Your boss explains they're under pressure from senior leadership. How do you respond?", options: ["\"That's not my problem - I'm telling you what my team needs.\"", "\"I understand you're in a difficult position. Let me share what I'm seeing from the implementation side.\"", "\"Senior leadership doesn't understand our work.\"", "\"You need to push back on them.\""], correctAnswer: 1, feedback: ["Excellent! This acknowledges their constraint while positioning yourself as a partner in problem-solving.", "Showing empathy for their position makes them more likely to listen to your concerns.", "This response creates 'us against the problem' rather than 'me against you' dynamic."] }] },
+      { id: 5, title: "Delivering Disappointing News", description: "Inform your team about budget cuts that will affect their projects and potentially their job security.", category: "Change Management", difficulty: "Advanced", estimatedTime: "12-18 min", completed: false, questions: [{ id: 13, question: "You need to tell your team about significant budget cuts. What's your preparation priority?", options: ["Prepare answers for every possible question they might ask", "Plan how to minimize the impact in your communication", "Gather clear information about what you can and cannot share, and prepare for honest dialogue", "Wait until you have all the details figured out"], correctAnswer: 2, feedback: ["Excellent preparation! Honesty about what you know and don't know builds trust during difficult times.", "Being transparent about constraints shows respect for your team's intelligence.", "Preparing for dialogue rather than just delivering news shows you value their input and concerns."]}, { id: 14, question: "How should you structure the team meeting to deliver this news?", options: ["Start with small talk to ease into the bad news", "Begin with the news directly, then provide context and next steps", "End the meeting with the news so people can process it privately", "Send an email instead of meeting face-to-face"], correctAnswer: 1, feedback: ["Right approach! Leading with the main news respects people's need to know.", "This structure prevents people from being distracted wondering 'why are we here?'.", "Direct communication followed by support and context shows both respect and care for your team."]}, { id: 15, question: "A team member asks \"Does this mean layoffs are coming?\" and you genuinely don't know. How do you respond?", options: ["\"I don't think so, but I can't guarantee anything.\"", "\"Don't worry about that right now.\"", "\"I honestly don't have information about layoffs. What I can tell you is what I do know about our situation.\"", "\"That's above my pay grade.\""], correctAnswer: 2, feedback: ["Perfect response! Honest uncertainty is better than false reassurance or deflection.", "This response acknowledges their concern while being truthful about what you can and cannot say.", "Following up with what you DO know helps people feel informed rather than left in uncertainty."] }] }
+    ];
+
+    //=========== SERVICES ===========//
+    
+    // services/geminiService.ts
+    async function getWorkplaceGuidance(question) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const matches = searchAnswers(question);
+      const selectedAnswer = matches.length > 0 ? matches[0] : getDefaultAnswer();
+      
+      function convertMarkdownToHtml(text) {
+          let html = text.replace(/\n/g, '<br>'); // Basic newline to <br>
+          // More complex replacements needed to be wrapped correctly.
+          html = html.replace(/## (.*?)<br>/g, '<h2>$1</h2>');
+          html = html.replace(/### (.*?)<br>/g, '<h3>$1</h3>');
+          html = html.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+          html = html.replace(/^- (.*?)<br>/g, '<li>$1</li>');
+          html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>').replace(/<\/li><ul>/g, '</li>');
+          html = html.replace(/<br>/g, '</p><p>'); // Convert remaining line breaks to paragraphs
+          return `<div class="prose max-w-none"><p>${html}</p></div>`;
+      }
+      
+      return convertMarkdownToHtml(selectedAnswer.content);
+    }
+    
+    //=========== UI COMPONENTS ===========//
+    function Button({ className, variant, children, ...props }) {
+      const baseClasses = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50";
+      const variantClasses = {
+        default: "bg-[#3B3168] hover:bg-[#2c254d] text-white",
+        link: "text-[#3B3168] hover:text-[#2c254d] underline-offset-4 hover:underline",
+      };
+      const finalClasses = cn(baseClasses, variantClasses[variant] || variantClasses.default, className);
+      return <button className={finalClasses} {...props}>{children}</button>;
+    }
+    
+    function Card({ className, children, ...props }) {
+        return <div className={cn("rounded-lg border bg-white text-gray-800 shadow-sm", className)} {...props}>{children}</div>
+    }
+
+    function Badge({ className, variant, children, ...props }) {
+      const variantClasses = {
+        secondary: "bg-[#3B3168]/10 text-[#3B3168]",
+        outline: "text-foreground",
+      };
+      const baseClasses = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold";
+      return <div className={cn(baseClasses, variantClasses[variant], className)} {...props}>{children}</div>;
+    }
+
+    function Progress({ value, className }) {
+        return (
+            <div className={cn("relative h-2 w-full overflow-hidden rounded-full bg-gray-200", className)}>
+                <div 
+                    className="h-full w-full flex-1 bg-[#3B3168] transition-all"
+                    style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+                />
+            </div>
+        );
+    }
+
+    function Textarea({ className, ...props }) {
+        return <textarea className={cn("flex min-h-[80px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base ring-offset-background placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B3168] disabled:cursor-not-allowed disabled:opacity-50", className)} {...props} />;
+    }
+
+    //=========== PAGE COMPONENTS ===========//
+
+    function HomePage({ onPageChange, logoUrl }) {
+      return (
+        <div className="text-center animate-fadeIn">
+          <div className="mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#3B3168] to-[#2c254d] bg-clip-text text-transparent">
+              Handling Difficult Conversations
+            </h1>
+            <p className="text-xl text-gray-600 mb-2">A Leader's Tool</p>
+            <p className="text-lg text-gray-500 max-w-3xl mx-auto leading-relaxed">
+              Master workplace communication through interactive scenarios. Build confidence in navigating challenging conversations with proven frameworks.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-[#3B3168]/20" onClick={() => onPageChange('scenarios')}>
+              <div className="w-16 h-16 bg-gradient-to-br from-[#3B3168] to-[#2c254d] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <span className="text-2xl text-white">🎯</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-[#3B3168]">Interactive Scenarios</h3>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Practice with realistic workplace scenarios. Each scenario includes multiple-choice questions with detailed feedback.
+              </p>
+              <Button>Start Training</Button>
+            </Card>
+            <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-[#3B3168]/20" onClick={() => onPageChange('qa')}>
+              <div className="w-16 h-16 bg-gradient-to-br from-[#3B3168] to-[#2c254d] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <span className="text-2xl text-white">💡</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-[#3B3168]">Ask a Question</h3>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Get personalized guidance for your specific challenges. Our expert knowledge base provides actionable advice.
+              </p>
+              <Button>Get Guidance</Button>
+            </Card>
+          </div>
+           <div className="mt-12 p-6 bg-gray-100 rounded-xl">
+              <h4 className="text-lg font-bold mb-3 text-[#3B3168]">Grounded in Research</h4>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                All guidance is based on proven frameworks from "Crucial Conversations," "Difficult Conversations," and "Radical Candor".
+              </p>
+            </div>
+        </div>
+      );
+    }
+    
+    function ScenariosPage({ scenarios, onPageChange, onScenarioSelect }) {
+      const completedCount = scenarios.filter(s => s.completed).length;
+      return (
+        <div className="animate-slideUp">
+          <Button onClick={() => onPageChange('home')} variant="link" className="mb-6 p-0">
+            ← Back to Home
+          </Button>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4">Training Scenarios</h2>
+            <p className="text-gray-600 mb-4">
+              Practice difficult conversations in a safe environment.
+            </p>
+            <div className="text-sm text-gray-500">
+              Progress: {completedCount} of {scenarios.length} scenarios completed
+            </div>
+          </div>
+          <div className="grid gap-6">
+            {scenarios.map((scenario) => (
+              <Card key={scenario.id} className="p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-[#3B3168]/20" onClick={() => onScenarioSelect(scenario.id)}>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-xl font-bold text-[#3B3168]">{scenario.title}</h3>
+                  {scenario.completed && <CheckCircle className="h-5 w-5 text-green-500" />}
+                </div>
+                <p className="text-gray-600 mb-4">{scenario.description}</p>
+                 <div className="flex flex-wrap gap-2 mb-4">
+                   <Badge variant="secondary">{scenario.category}</Badge>
+                   <Badge variant="outline" className={`${scenario.difficulty === 'Beginner' ? 'border-green-500 text-green-700' : ''} ${scenario.difficulty === 'Intermediate' ? 'border-yellow-500 text-yellow-700' : ''} ${scenario.difficulty === 'Advanced' ? 'border-red-500 text-red-700' : ''}`}>{scenario.difficulty}</Badge>
+                 </div>
+                <Button onClick={(e) => { e.stopPropagation(); onScenarioSelect(scenario.id); }}>
+                  {scenario.completed ? 'Review Scenario' : 'Start Scenario'}
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function ScenarioDetailPage({ scenario, onPageChange, onScenarioComplete }) {
+      const [selectedAnswers, setSelectedAnswers] = useState({});
+      const [showResults, setShowResults] = useState(false);
+      const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+      const isLastQuestion = currentQuestionIndex === scenario.questions.length - 1;
+      const currentQuestion = scenario.questions[currentQuestionIndex];
+      const hasAnswered = selectedAnswers[currentQuestion.id] !== undefined;
+      const selectedAnswer = selectedAnswers[currentQuestion.id];
+      const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+      const progress = ((currentQuestionIndex + 1) / scenario.questions.length) * 100;
+
+      const handleAnswerSelect = (questionId, answerIndex) => {
+        setSelectedAnswers(prev => ({ ...prev, [questionId]: answerIndex }));
+        setShowResults(true);
+      };
+
+      const handleNext = () => {
+        if (isLastQuestion) {
+          onScenarioComplete();
+        } else {
+          setCurrentQuestionIndex(prev => prev + 1);
+          setShowResults(false);
         }
+      };
 
-        function handleNextStep() {
-            const scenario = AppState.scenarios.find(s => s.id === AppState.currentScenarioId);
-            if (scenario.currentStep < scenario.steps.length - 1) {
-                scenario.currentStep++;
-                render();
-            } else {
-                scenario.completed = true;
-                AppState.currentPage = 'scenarios';
-                render();
-            }
+      return (
+        <div className="animate-slideUp">
+          <Button onClick={() => onPageChange('scenarios')} variant="link" className="mb-6 p-0">
+            ← Back to Scenarios
+          </Button>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-4">{scenario.title}</h2>
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Question {currentQuestionIndex + 1} of {scenario.questions.length}</span>
+              <span>{Math.round(progress)}% Complete</span>
+            </div>
+            <Progress value={progress} />
+          </div>
+          <Card className="p-8 mb-6">
+            <h3 className="text-xl font-bold mb-4">{currentQuestion.question}</h3>
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, index) => (
+                <button key={index} onClick={() => handleAnswerSelect(currentQuestion.id, index)} disabled={hasAnswered} className={cn('w-full p-4 text-left border-2 rounded-lg transition-all', hasAnswered ? (index === currentQuestion.correctAnswer ? 'border-green-500 bg-green-50' : (index === selectedAnswer ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-gray-50')) : 'border-gray-300 hover:border-[#3B3168] hover:bg-[#3B3168]/5')}>
+                  <div className="flex items-center justify-between">
+                    <span>{option}</span>
+                    {hasAnswered && (index === currentQuestion.correctAnswer ? <CheckCircle className="h-5 w-5 text-green-500" /> : (index === selectedAnswer ? <XCircle className="h-5 w-5 text-red-500" /> : null))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </Card>
+          {showResults && (
+            <Card className="p-6 mb-6 animate-slideUp">
+              <h4 className={cn('font-bold mb-2', isCorrect ? 'text-green-800' : 'text-red-800')}>{isCorrect ? 'Correct!' : 'Not quite right.'}</h4>
+              <div className="space-y-3">
+                {currentQuestion.feedback.map((fb, i) => <p key={i} className="text-gray-700">{fb}</p>)}
+              </div>
+            </Card>
+          )}
+          {hasAnswered && (
+            <div className="text-center">
+              <Button onClick={handleNext}>{isLastQuestion ? 'Complete Scenario' : 'Next Question'}</Button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function QAPage({ onPageChange, qaState, onQuestionChange, onSubmitQuestion }) {
+        return (
+            <div className="animate-slideUp">
+                <Button onClick={() => onPageChange('home')} variant="link" className="mb-6 p-0">
+                    ← Back to Home
+                </Button>
+                <Card className="p-8 shadow-lg">
+                    <h2 className="text-3xl font-bold mb-2">Ask a Question</h2>
+                    <p className="mb-6 text-gray-600">
+                        Describe a difficult conversation you're facing to get expert guidance from our knowledge base.
+                    </p>
+                    <Textarea
+                        value={qaState.question}
+                        onChange={(e) => onQuestionChange(e.target.value)}
+                        className="min-h-32"
+                        placeholder="E.g., How do I give feedback to my boss?"
+                    />
+                    <div className="mt-4 text-right">
+                        <Button onClick={onSubmitQuestion} disabled={qaState.isLoading} className="px-6 py-3">
+                            {qaState.isLoading ? <div className="flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Getting Guidance...</div> : 'Get Guidance'}
+                        </Button>
+                    </div>
+                    <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200 min-h-[100px]">
+                        {qaState.response ? <div dangerouslySetInnerHTML={{ __html: qaState.response }} /> : <p className="text-gray-500">Your guidance will appear here.</p>}
+                    </div>
+                </Card>
+            </div>
+        );
+    }
+    
+    //=========== MAIN APP COMPONENT ===========//
+
+    function App() {
+      const [page, setPage] = useState('home');
+      const [scenariosData, setScenariosData] = useState(scenarios);
+      const [selectedScenarioId, setSelectedScenarioId] = useState(null);
+      const [qaState, setQaState] = useState({ question: '', response: '', isLoading: false });
+
+      const selectedScenario = scenariosData.find(s => s.id === selectedScenarioId);
+
+      useEffect(() => { window.scrollTo(0, 0); }, [page]);
+
+      const handleScenarioComplete = () => {
+        if (selectedScenarioId === null) return;
+        setScenariosData(prev => prev.map(s => s.id === selectedScenarioId ? { ...s, completed: true } : s));
+        setPage('scenarios');
+      };
+      
+      const handleQuestionSubmit = async () => {
+        setQaState(prev => ({ ...prev, isLoading: true, response: '' }));
+        const responseHtml = await getWorkplaceGuidance(qaState.question);
+        setQaState(prev => ({ ...prev, isLoading: false, response: responseHtml }));
+      };
+      
+      const handleScenarioSelect = (id) => {
+        setSelectedScenarioId(id);
+        setPage('scenario-detail');
+      };
+
+      const renderPage = () => {
+        switch (page) {
+          case 'scenarios':
+            return <ScenariosPage scenarios={scenariosData} onPageChange={setPage} onScenarioSelect={handleScenarioSelect} />;
+          case 'scenario-detail':
+            return selectedScenario ? <ScenarioDetailPage scenario={selectedScenario} onPageChange={setPage} onScenarioComplete={handleScenarioComplete} /> : null;
+          case 'qa':
+            return <QAPage onPageChange={setPage} qaState={qaState} onQuestionChange={(q) => setQaState(prev => ({ ...prev, question: q }))} onSubmitQuestion={handleQuestionSubmit} />;
+          case 'home':
+          default:
+            return <HomePage onPageChange={setPage} />;
         }
+      };
 
-        async function handleAskGemini() {
-            const question = document.getElementById('qa-question').value;
-            if (!question.trim()) {
-                alert('Please enter a question.');
-                return;
-            }
+      return (
+        <div className="min-h-screen">
+          <main className="container mx-auto p-4 md:p-8 max-w-5xl">
+            {renderPage()}
+          </main>
+          <footer className="text-center p-4 mt-8 text-sm text-gray-400">
+            <p>&copy; 2025 Workplace Communication Tools</p>
+          </footer>
+        </div>
+      );
+    }
 
-            AppState.qa.question = question;
-            AppState.qa.isLoading = true;
-            render();
-
-            const systemPrompt = `You are an expert consultant in organizational development and communication, specializing in difficult conversations. Your advice is grounded in the principles of "Crucial Conversations" (Patterson, Grenny, McMillan, Switzler), "Difficult Conversations" (Stone, Patton, Heen), and "Radical Candor" (Scott). Your role is to help leaders navigate challenging workplace conversations effectively.
-
-When a user asks a question, provide a concise, actionable, and structured response. Your response should:
-1.  **Acknowledge and Reframe:** Briefly validate the user's challenge and reframe it from a 'battle' to a 'learning conversation.'
-2.  **Provide a Step-by-Step Approach:** Offer 3-5 clear, actionable steps for preparing for and conducting the conversation.
-3.  **Incorporate Key Principles:** Weave in concepts like the 'Third Story,' 'And Stance,' mapping contribution instead of blame, disentangling intent from impact, and addressing feelings directly.
-4.  **Suggest Opening Lines:** Provide concrete examples of how to start the conversation using a neutral, collaborative tone.
-5.  **Maintain a supportive and empowering tone.**
-
-Format your response using Markdown for clarity (headings, bold text, lists).`;
-
-            const userQuery = AppState.qa.question;
-            const apiKey = ""; // API key will be automatically provided in the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    let text = candidate.content.parts[0].text;
-
-                    // Simple markdown to HTML conversion
-                    text = text.replace(/### (.*)/g, '<h3>$1</h3>');
-                    text = text.replace(/## (.*)/g, '<h3>$1</h3>');
-                    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    text = text.replace(/^\* (.*)$/gm, '<li>$1</li>');
-                    text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
-                    text = text.replace(/\n/g, '<br>');
-
-                    AppState.qa.response = `<div class="prose">${text}</div>`;
-                } else {
-                    AppState.qa.response = '<p class="text-red-500">Sorry, I couldn\'t generate a response. Please try again.</p>';
-                }
-            } catch (error) {
-                console.error("API Call failed:", error);
-                AppState.qa.response = '<p class="text-red-500">An error occurred while getting guidance. Please check the console for details.</p>';
-            } finally {
-                AppState.qa.isLoading = false;
-                render();
-            }
-        }
-
-        function attachEventListeners() {
-            document.querySelectorAll('button[data-page]').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const page = e.currentTarget.dataset.page;
-                    if (page === 'scenarios') {
-                        const scenario = AppState.scenarios.find(s => s.id === AppState.currentScenarioId);
-                        if (scenario) scenario.currentStep = 0;
-                    }
-                    AppState.currentPage = page;
-                    render();
-                });
-            });
-
-            if (AppState.currentPage === 'scenarios') {
-                document.querySelectorAll('.scenario-option').forEach(item => {
-                    item.addEventListener('click', e => {
-                        AppState.currentScenarioId = parseInt(e.currentTarget.dataset.scenarioId);
-                        AppState.currentPage = 'scenario-detail';
-                        render();
-                    });
-                });
-            }
-
-            if (AppState.currentPage === 'scenario-detail') {
-                document.querySelectorAll('.scenario-option').forEach(item => {
-                    item.addEventListener('click', handleScenarioOptionClick);
-                });
-                const nextBtn = document.getElementById('next-btn');
-                if (nextBtn) nextBtn.addEventListener('click', handleNextStep);
-            }
-
-            if (AppState.currentPage === 'qa') {
-                document.getElementById('ask-gemini-btn').addEventListener('click', handleAskGemini);
-            }
-        }
-
-        // Initial render
-        render();
-    </script>
+    //=========== RENDER THE APP ===========//
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
 </body>
 </html>
